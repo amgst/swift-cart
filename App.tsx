@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ViewType, Product, CartItem, Order, StoreProfile, MerchantStore } from './types';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
@@ -11,12 +12,24 @@ import Onboarding from './components/Onboarding';
 import PaymentSimulation from './components/PaymentSimulation';
 import Marketplace from './components/Marketplace';
 import OrderTracking from './components/OrderTracking';
+import Login from './components/Login';
+import Register from './components/Register';
+import UserDashboard from './components/UserDashboard';
 // Fix: Added missing ShoppingBag icon import from lucide-react
 import { ShoppingBag } from 'lucide-react';
 import { storeService, cartService } from './firebase/firestore';
+import { onAuthStateChange, getCurrentUser } from './firebase/auth';
+import { User } from 'firebase/auth';
 
-const App: React.FC = () => {
-  const [view, setView] = useState<ViewType>('landing');
+interface AppProps {
+  initialView?: ViewType;
+  storeSlug?: string;
+}
+
+const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [view, setView] = useState<ViewType>(initialView || 'landing');
   const [stores, setStores] = useState<MerchantStore[]>([]);
   const [activeStoreId, setActiveStoreId] = useState<string | null>(() => {
     return localStorage.getItem('swiftcart_active_store_id');
@@ -25,6 +38,8 @@ const App: React.FC = () => {
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const sessionId = useRef<string>(cartService.generateSessionId());
   const unsubscribeStoresRef = useRef<(() => void) | null>(null);
   const unsubscribeStoreRef = useRef<(() => void) | null>(null);
@@ -38,6 +53,57 @@ const App: React.FC = () => {
       console.error('Error loading cart:', error);
     }
   }, []);
+
+  // Initialize Firebase Auth state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChange((currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Handle URL-based routing for store slugs
+  useEffect(() => {
+    if (storeSlug) {
+      // Load store by slug
+      const loadStoreBySlug = async () => {
+        try {
+          const store = await storeService.getStoreBySlug(storeSlug);
+          if (store) {
+            setActiveStoreId(store.profile.id);
+            // Determine view based on URL path
+            if (location.pathname.includes('/admin')) {
+              setView('admin');
+            } else {
+              setView('store');
+            }
+          } else {
+            // Store not found, redirect to landing
+            navigate('/');
+          }
+        } catch (error) {
+          console.error('Error loading store:', error);
+          navigate('/');
+        }
+      };
+      loadStoreBySlug();
+    }
+  }, [storeSlug, navigate, location.pathname]);
+
+  // Sync view with URL path
+  useEffect(() => {
+    const path = location.pathname;
+    if (!storeSlug) {
+      if (path === '/') setView('landing');
+      else if (path === '/marketplace') setView('marketplace');
+      else if (path === '/tracking') setView('tracking');
+      else if (path === '/login') setView('login');
+      else if (path === '/register') setView('register');
+      else if (path === '/dashboard') setView('dashboard');
+      else if (path === '/onboarding') setView('onboarding');
+    }
+  }, [location.pathname, storeSlug]);
 
   // Initialize Firebase subscriptions
   useEffect(() => {
@@ -93,6 +159,12 @@ const App: React.FC = () => {
   const activeStore = stores.find(s => s.profile.id === activeStoreId) || null;
 
   const createStore = useCallback(async (profileData: Partial<StoreProfile>) => {
+    if (!user) {
+      alert('Please login to create a store');
+      navigate('/login');
+      return;
+    }
+
     const storeId = 'shop-' + Math.random().toString(36).substr(2, 5);
     const newStore: MerchantStore = {
       profile: {
@@ -103,7 +175,9 @@ const App: React.FC = () => {
         subscriptionStatus: 'active',
         planName: 'Local Hero Plan',
         expiryDate: Date.now() + (30 * 24 * 60 * 60 * 1000),
-        ownerEmail: profileData.ownerEmail || ''
+        ownerEmail: user.email || profileData.ownerEmail || '',
+        userId: user.uid,
+        storeSlug: profileData.storeSlug || storeId
       },
       products: [],
       orders: []
@@ -111,12 +185,12 @@ const App: React.FC = () => {
     try {
       await storeService.createStore(newStore);
       setActiveStoreId(newStore.profile.id);
-      setView('admin');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Error creating store:', error);
       alert('Failed to create store. Please try again.');
     }
-  }, []);
+  }, [user, navigate]);
 
   const updateActiveStore = useCallback(async (updater: (store: MerchantStore) => MerchantStore) => {
     if (!activeStoreId) return;
@@ -194,10 +268,10 @@ const App: React.FC = () => {
     }
     setActiveStoreId(null);
     setCart([]);
-    setView('landing');
+    navigate('/');
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -217,22 +291,84 @@ const App: React.FC = () => {
         cartCount={cart.reduce((a, b) => a + b.quantity, 0)}
         onCartClick={() => setIsCartOpen(true)}
         onExitStore={handleExitStore}
+        user={user}
       />
 
       <main className="flex-grow container mx-auto py-8">
+        {view === 'login' && (
+          <Login 
+            onSuccess={() => navigate('/dashboard')}
+            onCancel={() => navigate('/')}
+            onSwitchToRegister={() => navigate('/register')}
+          />
+        )}
+
+        {view === 'register' && (
+          <Register 
+            onSuccess={() => navigate('/dashboard')}
+            onCancel={() => navigate('/')}
+            onSwitchToLogin={() => navigate('/login')}
+          />
+        )}
+
+        {view === 'dashboard' && user && (
+          <UserDashboard
+            user={user}
+            stores={stores}
+            onCreateStore={() => navigate('/onboarding')}
+            onVisitStore={(id) => {
+              const store = stores.find(s => s.profile.id === id);
+              if (store) {
+                navigate(`/s/${store.profile.storeSlug}`);
+              }
+            }}
+            onManageStore={(id) => {
+              const store = stores.find(s => s.profile.id === id);
+              if (store) {
+                navigate(`/store/${store.profile.storeSlug}/admin`);
+              }
+            }}
+            onLogout={() => {
+              setUser(null);
+              navigate('/');
+            }}
+          />
+        )}
+
         {view === 'landing' && (
           <LandingPage 
             stores={stores}
-            onStartOnboarding={() => setView('onboarding')} 
-            onVisitStore={(id) => { setActiveStoreId(id); setView('store'); }}
-            onManageStore={(id) => { setActiveStoreId(id); setView('admin'); }}
+            onStartOnboarding={() => {
+              if (user) {
+                navigate('/onboarding');
+              } else {
+                navigate('/login');
+              }
+            }}
+            onVisitStore={(id) => {
+              const store = stores.find(s => s.profile.id === id);
+              if (store) {
+                navigate(`/s/${store.profile.storeSlug}`);
+              }
+            }}
+            onManageStore={(id) => {
+              const store = stores.find(s => s.profile.id === id);
+              if (store) {
+                navigate(`/store/${store.profile.storeSlug}/admin`);
+              }
+            }}
           />
         )}
 
         {view === 'marketplace' && (
           <Marketplace 
             stores={stores} 
-            onVisitStore={(id) => { setActiveStoreId(id); setView('store'); }} 
+            onVisitStore={(id) => {
+              const store = stores.find(s => s.profile.id === id);
+              if (store) {
+                navigate(`/s/${store.profile.storeSlug}`);
+              }
+            }} 
           />
         )}
 
@@ -242,7 +378,7 @@ const App: React.FC = () => {
         
         {view === 'onboarding' && (
           <Onboarding 
-            onCancel={() => setView('landing')}
+            onCancel={() => navigate(user ? '/dashboard' : '/')}
             onComplete={(data) => {
               // Store temporarily in localStorage for payment step
               localStorage.setItem('pending_onboarding', JSON.stringify(data));
@@ -258,7 +394,7 @@ const App: React.FC = () => {
               createStore(pending);
               localStorage.removeItem('pending_onboarding');
             }} 
-            onCancel={() => setView('onboarding')}
+            onCancel={() => navigate('/onboarding')}
           />
         )}
 
@@ -275,7 +411,7 @@ const App: React.FC = () => {
                 onAddProduct={(p) => updateActiveStore(s => ({ ...s, products: [p, ...s.products] }))} 
                 onDeleteProduct={(id) => updateActiveStore(s => ({ ...s, products: s.products.filter(item => item.id !== id) }))} 
                 orders={activeStore.orders}
-                onViewStore={() => setView('store')}
+                onViewStore={() => activeStore ? navigate(`/s/${activeStore.profile.storeSlug}`) : navigate('/')}
               />
             )}
             {view === 'checkout' && (
@@ -283,11 +419,11 @@ const App: React.FC = () => {
                 profile={activeStore.profile}
                 cart={cart} 
                 onPlaceOrder={placeOrder} 
-                onBack={() => setView('store')} 
+                onBack={() => activeStore ? navigate(`/s/${activeStore.profile.storeSlug}`) : navigate('/')} 
               />
             )}
             {view === 'success' && (
-              <SuccessView profile={activeStore.profile} order={lastOrder} onContinue={() => setView('store')} />
+              <SuccessView profile={activeStore.profile} order={lastOrder} onContinue={() => navigate(`/s/${activeStore.profile.storeSlug}`)} />
             )}
           </>
         )}
@@ -300,7 +436,7 @@ const App: React.FC = () => {
         items={cart} 
         onUpdateQuantity={(id, delta) => setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item))} 
         onRemove={(id) => setCart(prev => prev.filter(item => item.id !== id))}
-        onCheckout={() => { setIsCartOpen(false); setView('checkout'); }}
+        onCheckout={() => { setIsCartOpen(false); setView('checkout'); }} // Checkout uses view state for now
       />
 
       <footer className="bg-white border-t border-gray-200 py-16 mt-12">
@@ -320,7 +456,7 @@ const App: React.FC = () => {
                <ul className="space-y-4 text-sm text-gray-500 font-bold">
                  <li onClick={() => setView('marketplace')} className="cursor-pointer hover:text-indigo-600">Marketplace</li>
                  <li onClick={() => setView('tracking')} className="cursor-pointer hover:text-indigo-600">Order Tracking</li>
-                 <li onClick={() => setView('onboarding')} className="cursor-pointer hover:text-indigo-600">Start Selling</li>
+                 <li onClick={() => setView(user ? 'dashboard' : 'login')} className="cursor-pointer hover:text-indigo-600">Start Selling</li>
                </ul>
             </div>
             <div>

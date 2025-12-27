@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { StoreProfile } from '../types';
 import { Store, Mail, Palette, Type, ArrowRight, X } from 'lucide-react';
+import { generateSlug, isValidSlug } from '../utils/slug';
 
 interface OnboardingProps {
   onComplete: (data: Partial<StoreProfile>) => void;
@@ -14,7 +14,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
     name: '',
     tagline: '',
     ownerEmail: '',
-    brandColor: '#4f46e5'
+    brandColor: '#4f46e5',
+    storeSlug: ''
   });
 
   const next = () => setStep(s => s + 1);
@@ -49,10 +50,30 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Public Store Name</label>
               <input 
                 type="text" required value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
+                onChange={e => {
+                  const name = e.target.value;
+                  setFormData({
+                    ...formData, 
+                    name,
+                    storeSlug: generateSlug(name) || formData.storeSlug
+                  });
+                }}
                 placeholder="e.g. Lahore Street Style"
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-8 py-5 outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Store URL Slug</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">swiftcart.pk/s/</span>
+                <input 
+                  type="text" required value={formData.storeSlug}
+                  onChange={e => setFormData({...formData, storeSlug: generateSlug(e.target.value)})}
+                  placeholder="my-store"
+                  className="w-full pl-40 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">Your store will be available at: swiftcart.pk/s/{formData.storeSlug || 'my-store'}</p>
             </div>
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Store Slogan</label>
@@ -65,7 +86,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
             </div>
             <button 
               onClick={next} 
-              disabled={!formData.name || !formData.tagline} 
+              disabled={!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug)} 
               className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 disabled:opacity-30 shadow-xl shadow-indigo-100 active:scale-95 transition-all"
             >
               CONTINUE <ArrowRight className="w-6 h-6" />

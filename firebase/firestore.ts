@@ -7,6 +7,7 @@ import {
   updateDoc, 
   deleteDoc, 
   query,
+  where,
   onSnapshot,
   Timestamp,
   writeBatch
@@ -58,6 +59,31 @@ export const storeService = {
     }
     return null;
   },
+
+  // Get store by slug (query on profile.storeSlug requires index, using array-contains workaround)
+  getStoreBySlug: async (slug: string): Promise<MerchantStore | null> => {
+    // Get all stores and filter by slug (for now - should use index in production)
+    const storesRef = collection(db, STORES_COLLECTION);
+    const snapshot = await getDocs(storesRef);
+    const stores = snapshot.docs.map(doc => {
+      const data = convertTimestamp(doc.data());
+      return { ...data, profile: { ...data.profile } } as MerchantStore;
+    });
+    return stores.find(s => s.profile.storeSlug === slug) || null;
+  },
+
+  // Get stores by userId (query on profile.userId requires index, using workaround)
+  getStoresByUserId: async (userId: string): Promise<MerchantStore[]> => {
+    // Get all stores and filter by userId (for now - should use index in production)
+    const storesRef = collection(db, STORES_COLLECTION);
+    const snapshot = await getDocs(storesRef);
+    const stores = snapshot.docs.map(doc => {
+      const data = convertTimestamp(doc.data());
+      return { ...data, profile: { ...data.profile } } as MerchantStore;
+    });
+    return stores.filter(s => s.profile.userId === userId);
+  },
+
 
   // Create a new store
   createStore: async (store: MerchantStore): Promise<void> => {

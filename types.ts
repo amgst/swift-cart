@@ -21,6 +21,8 @@ export interface StoreProfile {
   planName: string;
   expiryDate: number;
   ownerEmail: string;
+  userId: string; // Firebase Auth user ID
+  storeSlug: string; // Custom URL slug (e.g., "my-store" -> swiftcart.pk/s/my-store)
   customDomain?: string;
   domainStatus?: 'pending' | 'active' | 'error';
 }
@@ -45,4 +47,4 @@ export interface Order {
   createdAt: number;
 }
 
-export type ViewType = 'landing' | 'onboarding' | 'payment' | 'store' | 'admin' | 'checkout' | 'success' | 'marketplace' | 'tracking';
+export type ViewType = 'landing' | 'onboarding' | 'payment' | 'store' | 'admin' | 'checkout' | 'success' | 'marketplace' | 'tracking' | 'login' | 'register' | 'dashboard';

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ViewType, StoreProfile } from '../types';
 import { ShoppingBag, Settings, Store, ShoppingCart, LayoutGrid, LogOut, Globe, Search } from 'lucide-react';
 
@@ -10,9 +11,10 @@ interface NavbarProps {
   cartCount: number;
   onCartClick: () => void;
   onExitStore: () => void;
+  user?: any;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCartClick, onExitStore }) => {
+const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCartClick, onExitStore, user }) => {
   return (
     <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -29,46 +31,70 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
         </div>
 
         <div className="flex items-center gap-2 md:gap-6">
+          {!profile && (
+            <>
+              {user && (
+                <Link 
+                  to="/dashboard"
+                  className="px-4 py-2 text-sm font-bold text-gray-700 hover:text-indigo-600 transition-colors"
+                >
+                  Dashboard
+                </Link>
+              )}
+              {!user && (
+                <Link 
+                  to="/login"
+                  className="px-4 py-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                >
+                  Login
+                </Link>
+              )}
+            </>
+          )}
           {!profile ? (
             <div className="hidden md:flex items-center gap-6">
-              <button 
-                onClick={() => setView('landing')}
-                className={`font-bold text-sm transition-colors ${view === 'landing' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+              <Link 
+                to="/"
+                className={`font-bold text-sm transition-colors ${location.pathname === '/' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
               >
                 Home
-              </button>
-              <button 
-                onClick={() => setView('marketplace')}
-                className={`flex items-center gap-2 font-bold text-sm transition-colors ${view === 'marketplace' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+              </Link>
+              <Link 
+                to="/marketplace"
+                className={`flex items-center gap-2 font-bold text-sm transition-colors ${location.pathname === '/marketplace' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
               >
                 <Globe className="w-4 h-4" />
                 Explore Stores
-              </button>
-              <button 
-                onClick={() => setView('tracking')}
-                className={`flex items-center gap-2 font-bold text-sm transition-colors ${view === 'tracking' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+              </Link>
+              <Link 
+                to="/tracking"
+                className={`flex items-center gap-2 font-bold text-sm transition-colors ${location.pathname === '/tracking' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
               >
                 <Search className="w-4 h-4" />
                 Track Order
-              </button>
+              </Link>
             </div>
           ) : (
             <>
-              <button 
-                onClick={() => setView('store')}
-                className={`flex items-center gap-2 font-medium transition-colors ${view === 'store' ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                <Store className="w-4 h-4" />
-                <span className="hidden lg:inline text-sm">Shop View</span>
-              </button>
-              
-              <button 
-                onClick={() => setView('admin')}
-                className={`flex items-center gap-2 font-medium transition-colors ${view === 'admin' ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                <Settings className="w-4 h-4" />
-                <span className="hidden lg:inline text-sm">Manage</span>
-              </button>
+              {profile && (
+                <>
+                  <Link 
+                    to={`/s/${profile.storeSlug}`}
+                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/s/${profile.storeSlug}` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    <Store className="w-4 h-4" />
+                    <span className="hidden lg:inline text-sm">Shop View</span>
+                  </Link>
+                  
+                  <Link 
+                    to={`/store/${profile.storeSlug}/admin`}
+                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/store/${profile.storeSlug}/admin` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span className="hidden lg:inline text-sm">Manage</span>
+                  </Link>
+                </>
+              )}
 
               <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
 

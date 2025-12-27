@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ViewType, Product, CartItem, Order, StoreProfile, MerchantStore } from './types';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
@@ -13,46 +13,86 @@ import Marketplace from './components/Marketplace';
 import OrderTracking from './components/OrderTracking';
 // Fix: Added missing ShoppingBag icon import from lucide-react
 import { ShoppingBag } from 'lucide-react';
+import { storeService, cartService } from './firebase/firestore';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewType>('landing');
-  
-  const [stores, setStores] = useState<MerchantStore[]>(() => {
-    const saved = localStorage.getItem('swiftcart_all_stores');
-    return saved ? JSON.parse(saved) : [];
-  });
-  
+  const [stores, setStores] = useState<MerchantStore[]>([]);
   const [activeStoreId, setActiveStoreId] = useState<string | null>(() => {
     return localStorage.getItem('swiftcart_active_store_id');
   });
-
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('swiftcart_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const sessionId = useRef<string>(cartService.generateSessionId());
+  const unsubscribeStoresRef = useRef<(() => void) | null>(null);
+  const unsubscribeStoreRef = useRef<(() => void) | null>(null);
 
+  // Load cart from Firebase
+  const loadCart = useCallback(async (storeId: string) => {
+    try {
+      const cartItems = await cartService.getCart(storeId, sessionId.current);
+      setCart(cartItems);
+    } catch (error) {
+      console.error('Error loading cart:', error);
+    }
+  }, []);
+
+  // Initialize Firebase subscriptions
   useEffect(() => {
-    localStorage.setItem('swiftcart_all_stores', JSON.stringify(stores));
-  }, [stores]);
+    // Subscribe to all stores
+    const unsubscribe = storeService.subscribeToAllStores((updatedStores) => {
+      setStores(updatedStores);
+      setIsLoading(false);
+    });
+    unsubscribeStoresRef.current = unsubscribe;
 
+    // Load initial cart if activeStoreId exists
+    if (activeStoreId) {
+      loadCart(activeStoreId);
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+      if (unsubscribeStoreRef.current) unsubscribeStoreRef.current();
+    };
+  }, [loadCart, activeStoreId]);
+
+  // Save cart to Firebase
+  const saveCart = useCallback(async (storeId: string, items: CartItem[]) => {
+    try {
+      await cartService.saveCart(storeId, sessionId.current, items);
+    } catch (error) {
+      console.error('Error saving cart:', error);
+    }
+  }, []);
+
+  // Update activeStoreId in localStorage and load cart
   useEffect(() => {
     if (activeStoreId) {
       localStorage.setItem('swiftcart_active_store_id', activeStoreId);
+      loadCart(activeStoreId);
+      // Unsubscribe from previous store
+      if (unsubscribeStoreRef.current) {
+        unsubscribeStoreRef.current();
+      }
     } else {
       localStorage.removeItem('swiftcart_active_store_id');
+      setCart([]);
     }
-  }, [activeStoreId]);
+  }, [activeStoreId, loadCart]);
 
+  // Save cart to Firebase whenever it changes (if activeStoreId exists)
   useEffect(() => {
-    localStorage.setItem('swiftcart_cart', JSON.stringify(cart));
-  }, [cart]);
+    if (activeStoreId && cart.length >= 0) {
+      saveCart(activeStoreId, cart);
+    }
+  }, [cart, activeStoreId, saveCart]);
 
   const activeStore = stores.find(s => s.profile.id === activeStoreId) || null;
 
-  const createStore = useCallback((profileData: Partial<StoreProfile>) => {
+  const createStore = useCallback(async (profileData: Partial<StoreProfile>) => {
     const storeId = 'shop-' + Math.random().toString(36).substr(2, 5);
     const newStore: MerchantStore = {
       profile: {
@@ -68,14 +108,49 @@ const App: React.FC = () => {
       products: [],
       orders: []
     };
-    setStores(prev => [...prev, newStore]);
-    setActiveStoreId(newStore.profile.id);
-    setView('admin');
+    try {
+      await storeService.createStore(newStore);
+      setActiveStoreId(newStore.profile.id);
+      setView('admin');
+    } catch (error) {
+      console.error('Error creating store:', error);
+      alert('Failed to create store. Please try again.');
+    }
   }, []);
 
-  const updateActiveStore = useCallback((updater: (store: MerchantStore) => MerchantStore) => {
-    setStores(prev => prev.map(s => s.profile.id === activeStoreId ? updater(s) : s));
-  }, [activeStoreId]);
+  const updateActiveStore = useCallback(async (updater: (store: MerchantStore) => MerchantStore) => {
+    if (!activeStoreId) return;
+    
+    const currentStore = stores.find(s => s.profile.id === activeStoreId);
+    if (!currentStore) return;
+
+    const updatedStore = updater(currentStore);
+    
+    try {
+      // Check what changed and update accordingly
+      const profileChanged = JSON.stringify(updatedStore.profile) !== JSON.stringify(currentStore.profile);
+      const productsChanged = JSON.stringify(updatedStore.products) !== JSON.stringify(currentStore.products);
+      const ordersChanged = JSON.stringify(updatedStore.orders) !== JSON.stringify(currentStore.orders);
+
+      if (profileChanged && productsChanged && ordersChanged) {
+        // Everything changed, use updateStore
+        await storeService.updateStore(updatedStore);
+      } else {
+        // Update individual fields
+        if (profileChanged) {
+          await storeService.updateStoreProfile(activeStoreId, updatedStore.profile);
+        }
+        if (productsChanged) {
+          await storeService.updateProducts(activeStoreId, updatedStore.products);
+        }
+        if (ordersChanged) {
+          await storeService.updateOrders(activeStoreId, updatedStore.orders);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating store:', error);
+    }
+  }, [activeStoreId, stores]);
 
   const addToCart = useCallback((product: Product) => {
     setCart(prev => {
@@ -88,8 +163,8 @@ const App: React.FC = () => {
     setIsCartOpen(true);
   }, []);
 
-  const placeOrder = useCallback((customerData: Order['customer']) => {
-    if (!activeStore) return;
+  const placeOrder = useCallback(async (customerData: Order['customer']) => {
+    if (!activeStore || !activeStoreId) return;
     const shipping = 200;
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const newOrder: Order = {
@@ -101,17 +176,37 @@ const App: React.FC = () => {
       createdAt: Date.now()
     };
     
-    updateActiveStore(s => ({ ...s, orders: [newOrder, ...s.orders] }));
-    setLastOrder(newOrder);
-    setCart([]);
-    setView('success');
-  }, [cart, activeStore, updateActiveStore]);
+    try {
+      await storeService.addOrder(activeStoreId, newOrder);
+      setLastOrder(newOrder);
+      await cartService.clearCart(activeStoreId, sessionId.current);
+      setCart([]);
+      setView('success');
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert('Failed to place order. Please try again.');
+    }
+  }, [cart, activeStore, activeStoreId]);
 
-  const handleExitStore = () => {
+  const handleExitStore = async () => {
+    if (activeStoreId) {
+      await cartService.clearCart(activeStoreId, sessionId.current);
+    }
     setActiveStoreId(null);
     setCart([]);
     setView('landing');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading SwiftCart...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -149,6 +244,7 @@ const App: React.FC = () => {
           <Onboarding 
             onCancel={() => setView('landing')}
             onComplete={(data) => {
+              // Store temporarily in localStorage for payment step
               localStorage.setItem('pending_onboarding', JSON.stringify(data));
               setView('payment');
             }} 

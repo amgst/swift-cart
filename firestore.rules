@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Stores collection - anyone can read and write
+    match /stores/{storeId} {
+      allow read, write: if true;
+    }
+    
+    // Carts collection - anyone can read and write
+    match /carts/{cartId} {
+      allow read, write: if true;
+    }
+  }
+}

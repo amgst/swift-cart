@@ -346,7 +346,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar
-        profile={activeStore?.profile || null}
+        profile={activeStore && ['store', 'admin', 'checkout', 'success'].includes(view) ? activeStore.profile : null}
         view={view}
         setView={setView}
         cartCount={cart.reduce((a, b) => a + b.quantity, 0)}

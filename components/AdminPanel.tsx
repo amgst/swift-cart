@@ -87,6 +87,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
     ? profile.customDomain
     : `swiftcart.pk/shop/${profile.storeSlug || profile.id}`;
 
+  const PLAN_LIMITS = { 'Free': 5, 'Premium': 20 };
+  const maxProducts = PLAN_LIMITS[profile.planName as keyof typeof PLAN_LIMITS] || 5;
+  const isLimitReached = products.length >= maxProducts;
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
@@ -138,13 +142,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                   {copied ? <ShieldCheck className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
                 </button>
               </div>
+
+              {/* Product Limit Usage */}
+              <div className="mt-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-black uppercase tracking-widest text-gray-400">Plan Usage ({profile.planName})</span>
+                  <span className={`text-xs font-bold ${isLimitReached ? 'text-red-600' : 'text-gray-600'}`}>
+                    {products.length} / {maxProducts} Products
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${isLimitReached ? 'bg-red-500' : 'bg-indigo-500'}`}
+                    style={{ width: `${Math.min((products.length / maxProducts) * 100, 100)}%` }}
+                  />
+                </div>
+                {isLimitReached && profile.planName === 'Free' && (
+                  <p className="text-[10px] text-red-500 mt-2 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Limit reached. Upgrade to add more.
+                  </p>
+                )}
+              </div>
             </div>
             <button
-              onClick={() => setIsAdding(!isAdding)}
-              style={{ backgroundColor: profile.brandColor }}
-              className="w-full md:w-auto px-8 py-4 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
+              onClick={() => !isLimitReached && setIsAdding(!isAdding)}
+              disabled={isLimitReached}
+              style={{ backgroundColor: isLimitReached ? '#9ca3af' : profile.brandColor }}
+              className={`w-full md:w-auto px-8 py-4 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all ${isLimitReached ? 'cursor-not-allowed opacity-75' : ''}`}
             >
-              <Plus className="w-5 h-5" /> Add New Item
+              <Plus className="w-5 h-5" /> {isLimitReached ? 'Limit Reached' : 'Add New Item'}
             </button>
           </div>
 
@@ -384,8 +410,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                     </div>
                     <div className="mt-4 md:mt-0 flex items-center justify-end gap-2">
                       <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${o.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                          o.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                            'bg-yellow-100 text-yellow-700'
+                        o.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                          'bg-yellow-100 text-yellow-700'
                         }`}>
                         {o.status}
                       </span>

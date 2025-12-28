@@ -75,38 +75,26 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
               </Link>
             </div>
           ) : (
-            <>
-              {profile && (
-                <>
-                  <Link
-                    to={`/shop/${profile.storeSlug}`}
-                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/shop/${profile.storeSlug}` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
-                  >
-                    <Store className="w-4 h-4" />
-                    <span className="hidden lg:inline text-sm">Shop View</span>
-                  </Link>
-
-                  <Link
-                    to={`/shop/${profile.storeSlug}/admin`}
-                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/shop/${profile.storeSlug}/admin` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span className="hidden lg:inline text-sm">Manage</span>
-                  </Link>
-                </>
-              )}
-
-              <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
-
-              <button
-                onClick={onExitStore}
-                className="hidden sm:flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors"
-                title="Exit to Platform"
+            <div className="hidden md:flex items-center gap-6">
+              <Link
+                to={`/shop/${profile!.storeSlug}`}
+                className={`font-bold text-sm transition-colors ${location.pathname === `/shop/${profile!.storeSlug}` ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
               >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden lg:inline text-xs font-bold uppercase">Exit Store</span>
-              </button>
-            </>
+                Home
+              </Link>
+              <Link
+                to={`/shop/${profile!.storeSlug}/about`}
+                className={`font-bold text-sm transition-colors ${location.pathname === `/shop/${profile!.storeSlug}/about` ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                About
+              </Link>
+              <Link
+                to={`/shop/${profile!.storeSlug}/contact`}
+                className={`font-bold text-sm transition-colors ${location.pathname === `/shop/${profile!.storeSlug}/contact` ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                Contact
+              </Link>
+            </div>
           )}
 
           <div className="h-6 w-px bg-gray-200 mx-1" />
@@ -125,7 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
           </button>
         </div>
       </div>
-    </nav>
+    </nav >
   );
 };
 

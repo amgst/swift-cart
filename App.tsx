@@ -24,9 +24,10 @@ import { User } from 'firebase/auth';
 interface AppProps {
   initialView?: ViewType;
   storeSlug?: string;
+  page?: 'home' | 'about' | 'contact';
 }
 
-const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
+const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [view, setView] = useState<ViewType>(initialView || 'landing');
@@ -476,7 +477,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         {activeStore && (
           <>
             {view === 'store' && (
-              <Storefront profile={activeStore.profile} products={activeStore.products} onAddToCart={addToCart} />
+              <Storefront profile={activeStore.profile} products={activeStore.products} onAddToCart={addToCart} page={page} />
             )}
             {view === 'admin' && user && activeStore.profile.userId === user.uid && (
               <AdminPanel

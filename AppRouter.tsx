@@ -4,9 +4,9 @@ import App from './App';
 import { useParams } from 'react-router-dom';
 
 // Wrapper component to handle store slug routing
-const StoreRoute: React.FC = () => {
+const StoreRoute: React.FC<{ page?: 'home' | 'about' | 'contact' }> = ({ page = 'home' }) => {
   const { slug } = useParams<{ slug: string }>();
-  return <App storeSlug={slug} />;
+  return <App storeSlug={slug} page={page} />;
 };
 
 // Wrapper component to handle admin route
@@ -31,6 +31,8 @@ const AppRouter: React.FC = () => {
 
         {/* Store Routes - SEO Friendly URLs */}
         <Route path="/shop/:slug" element={<StoreRoute />} />
+        <Route path="/shop/:slug/about" element={<StoreRoute page="about" />} />
+        <Route path="/shop/:slug/contact" element={<StoreRoute page="contact" />} />
         <Route path="/shop/:slug/admin" element={<AdminRoute />} />
 
         {/* Auth Routes */}

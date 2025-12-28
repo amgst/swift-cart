@@ -252,12 +252,12 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
 
   const updateActiveStore = useCallback(async (updater: (store: MerchantStore) => MerchantStore) => {
     if (!activeStoreId) return;
-    
+
     const currentStore = stores.find(s => s.profile.id === activeStoreId);
     if (!currentStore) return;
 
     const updatedStore = updater(currentStore);
-    
+
     try {
       // Check what changed and update accordingly
       const profileChanged = JSON.stringify(updatedStore.profile) !== JSON.stringify(currentStore.profile);
@@ -307,7 +307,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
       status: 'pending',
       createdAt: Date.now()
     };
-    
+
     try {
       await storeService.addOrder(activeStoreId, newOrder);
       setLastOrder(newOrder);
@@ -342,10 +342,10 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar 
+      <Navbar
         profile={activeStore?.profile || null}
-        view={view} 
-        setView={setView} 
+        view={view}
+        setView={setView}
         cartCount={cart.reduce((a, b) => a + b.quantity, 0)}
         onCartClick={() => setIsCartOpen(true)}
         onExitStore={handleExitStore}
@@ -354,7 +354,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
 
       <main className="flex-grow container mx-auto py-8">
         {view === 'login' && (
-          <Login 
+          <Login
             onSuccess={() => {
               // Check if there's a return URL in the query params
               const params = new URLSearchParams(location.search);
@@ -371,7 +371,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         )}
 
         {view === 'register' && (
-          <Register 
+          <Register
             onSuccess={() => navigate('/dashboard')}
             onCancel={() => navigate('/')}
             onSwitchToLogin={() => navigate('/login')}
@@ -403,7 +403,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         )}
 
         {view === 'landing' && (
-          <LandingPage 
+          <LandingPage
             stores={stores}
             onStartOnboarding={() => {
               if (user) {
@@ -436,39 +436,39 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         )}
 
         {view === 'marketplace' && (
-          <Marketplace 
-            stores={stores} 
+          <Marketplace
+            stores={stores}
             onVisitStore={(id) => {
               const store = stores.find(s => s.profile.id === id);
               if (store) {
                 navigate(`/shop/${store.profile.storeSlug}`);
               }
-            }} 
+            }}
           />
         )}
 
         {view === 'tracking' && (
           <OrderTracking stores={stores} />
         )}
-        
+
         {view === 'onboarding' && (
-          <Onboarding 
+          <Onboarding
             onCancel={() => user ? navigate('/dashboard') : navigate('/')}
             onComplete={(data) => {
               // Store temporarily in localStorage for payment step
               localStorage.setItem('pending_onboarding', JSON.stringify(data));
               setView('payment');
-            }} 
+            }}
           />
         )}
 
         {view === 'payment' && (
-          <PaymentSimulation 
+          <PaymentSimulation
             onSuccess={() => {
               const pending = JSON.parse(localStorage.getItem('pending_onboarding') || '{}');
               createStore(pending);
               localStorage.removeItem('pending_onboarding');
-            }} 
+            }}
             onCancel={() => navigate('/onboarding')}
           />
         )}
@@ -479,22 +479,30 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
               <Storefront profile={activeStore.profile} products={activeStore.products} onAddToCart={addToCart} />
             )}
             {view === 'admin' && user && activeStore.profile.userId === user.uid && (
-              <AdminPanel 
+              <AdminPanel
                 profile={activeStore.profile}
                 setProfile={(p) => updateActiveStore(s => ({ ...s, profile: p }))}
-                products={activeStore.products} 
-                onAddProduct={(p) => updateActiveStore(s => ({ ...s, products: [p, ...s.products] }))} 
-                onDeleteProduct={(id) => updateActiveStore(s => ({ ...s, products: s.products.filter(item => item.id !== id) }))} 
+                products={activeStore.products}
+                onAddProduct={(p) => updateActiveStore(s => ({ ...s, products: [p, ...s.products] }))}
+                onDeleteProduct={(id) => updateActiveStore(s => ({ ...s, products: s.products.filter(item => item.id !== id) }))}
                 orders={activeStore.orders}
                 onViewStore={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')}
+                onUpdateOrderStatus={(id, status) => {
+                  storeService.updateOrderStatus(activeStoreId!, id, status);
+                  // Optimistic update
+                  updateActiveStore(s => ({
+                    ...s,
+                    orders: s.orders.map(o => o.id === id ? { ...o, status } : o)
+                  }));
+                }}
               />
             )}
             {view === 'checkout' && (
-              <Checkout 
+              <Checkout
                 profile={activeStore.profile}
-                cart={cart} 
-                onPlaceOrder={placeOrder} 
-                onBack={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')} 
+                cart={cart}
+                onPlaceOrder={placeOrder}
+                onBack={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')}
               />
             )}
             {view === 'success' && (
@@ -504,12 +512,12 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         )}
       </main>
 
-      <CartDrawer 
+      <CartDrawer
         profile={activeStore?.profile || null}
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
-        items={cart} 
-        onUpdateQuantity={(id, delta) => setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item))} 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        onUpdateQuantity={(id, delta) => setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item))}
         onRemove={(id) => setCart(prev => prev.filter(item => item.id !== id))}
         onCheckout={() => { setIsCartOpen(false); setView('checkout'); }} // Checkout uses view state for now
       />
@@ -518,37 +526,37 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2 space-y-6">
-               <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-600 rounded-lg text-white">
-                    <ShoppingBag className="w-5 h-5" />
-                  </div>
-                  <span className="text-2xl font-black text-gray-900">SwiftCart</span>
-               </div>
-               <p className="text-gray-500 max-w-sm font-medium">Empowering the next generation of Pakistani merchants with robust Cash on Delivery e-commerce solutions.</p>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-600 rounded-lg text-white">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <span className="text-2xl font-black text-gray-900">SwiftCart</span>
+              </div>
+              <p className="text-gray-500 max-w-sm font-medium">Empowering the next generation of Pakistani merchants with robust Cash on Delivery e-commerce solutions.</p>
             </div>
             <div>
-               <h4 className="font-black text-gray-900 mb-6 uppercase text-xs tracking-widest">Platform</h4>
-               <ul className="space-y-4 text-sm text-gray-500 font-bold">
-                 <li onClick={() => setView('marketplace')} className="cursor-pointer hover:text-indigo-600">Marketplace</li>
-                 <li onClick={() => setView('tracking')} className="cursor-pointer hover:text-indigo-600">Order Tracking</li>
-                 <li onClick={() => setView(user ? 'dashboard' : 'login')} className="cursor-pointer hover:text-indigo-600">Start Selling</li>
-               </ul>
+              <h4 className="font-black text-gray-900 mb-6 uppercase text-xs tracking-widest">Platform</h4>
+              <ul className="space-y-4 text-sm text-gray-500 font-bold">
+                <li onClick={() => setView('marketplace')} className="cursor-pointer hover:text-indigo-600">Marketplace</li>
+                <li onClick={() => setView('tracking')} className="cursor-pointer hover:text-indigo-600">Order Tracking</li>
+                <li onClick={() => setView(user ? 'dashboard' : 'login')} className="cursor-pointer hover:text-indigo-600">Start Selling</li>
+              </ul>
             </div>
             <div>
-               <h4 className="font-black text-gray-900 mb-6 uppercase text-xs tracking-widest">Support</h4>
-               <ul className="space-y-4 text-sm text-gray-500 font-bold">
-                 <li className="cursor-pointer hover:text-indigo-600">Merchant Help</li>
-                 <li className="cursor-pointer hover:text-indigo-600">Seller Policies</li>
-                 <li className="cursor-pointer hover:text-indigo-600">Developer API</li>
-               </ul>
+              <h4 className="font-black text-gray-900 mb-6 uppercase text-xs tracking-widest">Support</h4>
+              <ul className="space-y-4 text-sm text-gray-500 font-bold">
+                <li className="cursor-pointer hover:text-indigo-600">Merchant Help</li>
+                <li className="cursor-pointer hover:text-indigo-600">Seller Policies</li>
+                <li className="cursor-pointer hover:text-indigo-600">Developer API</li>
+              </ul>
             </div>
           </div>
           <div className="pt-12 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-gray-400 text-sm font-medium">&copy; 2024 SwiftCart SaaS. Built for scale.</p>
             <div className="flex gap-8 text-xs font-black text-gray-400 uppercase tracking-widest">
-               <span className="cursor-pointer hover:text-indigo-600">Terms</span>
-               <span className="cursor-pointer hover:text-indigo-600">Privacy</span>
-               <span className="cursor-pointer hover:text-indigo-600">Refunds</span>
+              <span className="cursor-pointer hover:text-indigo-600">Terms</span>
+              <span className="cursor-pointer hover:text-indigo-600">Privacy</span>
+              <span className="cursor-pointer hover:text-indigo-600">Refunds</span>
             </div>
           </div>
         </div>

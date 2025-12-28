@@ -25,6 +25,7 @@ export interface StoreProfile {
   storeSlug: string; // Custom URL slug (e.g., "my-store" -> swiftcart.pk/s/my-store)
   customDomain?: string;
   domainStatus?: 'pending' | 'active' | 'error';
+  phone?: string; // WhatsApp number for notifications
 }
 
 export interface MerchantStore {

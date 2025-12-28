@@ -121,12 +121,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
               </button>
             ))}
           </div>
-          <button
-            onClick={onViewStore}
+          <a
+            href={`/shop/${profile.storeSlug || profile.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-gray-900 text-white px-6 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black transition-colors"
           >
             <ExternalLink className="w-4 h-4" /> View Storefront
-          </button>
+          </a>
         </div>
       </div>
 
@@ -458,7 +460,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                   <code className="text-sm font-bold text-gray-500 uppercase">{profile.brandColor}</code>
                 </div>
               </div>
+              <div>
+                <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">WhatsApp Number</label>
+                <input
+                  type="text" value={profile.phone || ''}
+                  onChange={e => setProfile({ ...profile, phone: e.target.value })}
+                  placeholder="+92 300 1234567"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+                />
+              </div>
             </div>
+
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Store Tagline / Slogan</label>
               <input

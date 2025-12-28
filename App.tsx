@@ -236,7 +236,8 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
         expiryDate: Date.now() + (30 * 24 * 60 * 60 * 1000),
         ownerEmail: currentUser.email || profileData.ownerEmail || profileData.email || '',
         userId: currentUser.uid,
-        storeSlug: profileData.storeSlug || storeId
+        storeSlug: profileData.storeSlug || storeId,
+        phone: profileData.phone
       },
       products: [],
       orders: []

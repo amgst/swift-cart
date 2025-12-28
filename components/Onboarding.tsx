@@ -18,7 +18,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
     confirmPassword: '',
     displayName: '',
     brandColor: '#4f46e5',
-    storeSlug: ''
+    storeSlug: '',
+    phone: ''
   });
   const [error, setError] = useState('');
 
@@ -27,7 +28,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
 
     // Validate step 1
     if (step === 1) {
-      if (!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug)) {
+      if (!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug) || !formData.phone) {
         return;
       }
     }
@@ -94,6 +95,15 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
               />
             </div>
             <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">WhatsApp Number</label>
+              <input
+                type="tel" required value={formData.phone}
+                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="+92 300 1234567"
+                className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-8 py-5 outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
+              />
+            </div>
+            <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Store URL Slug</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">swiftcart.pk/shop/</span>
@@ -117,7 +127,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
             </div>
             <button
               onClick={next}
-              disabled={!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug)}
+              disabled={!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug) || !formData.phone}
               className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 disabled:opacity-30 shadow-xl shadow-indigo-100 active:scale-95 transition-all"
             >
               CONTINUE <ArrowRight className="w-6 h-6" />
@@ -248,7 +258,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
                   ownerEmail: dataToComplete.email,
                   email: dataToComplete.email,
                   password: dataToComplete.password,
-                  displayName: dataToComplete.displayName
+                  displayName: dataToComplete.displayName,
+                  phone: dataToComplete.phone
                 });
               }}
               className="w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-2xl"

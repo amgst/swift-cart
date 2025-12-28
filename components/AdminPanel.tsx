@@ -6,8 +6,9 @@ import {
   Plus, Trash2, Package, Sparkles, Loader2, List,
   Settings as SettingsIcon, Layout, CreditCard,
   ShieldCheck, RefreshCw, AlertTriangle, ExternalLink, Copy,
-  Globe, CheckCircle2, Info, ChevronRight, Server
+  Globe, CheckCircle2, Info, ChevronRight, Server, Upload
 } from 'lucide-react';
+import { uploadImage } from '../services/upload';
 
 interface AdminPanelProps {
   profile: StoreProfile;
@@ -28,6 +29,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
   const [isVerifying, setIsVerifying] = useState(false);
   const [domainInput, setDomainInput] = useState(profile.customDomain || '');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [currentUpload, setCurrentUpload] = useState<'product' | 'hero' | null>(null);
 
 
   const [newProduct, setNewProduct] = useState({
@@ -81,6 +83,32 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
       });
       setIsVerifying(false);
     }, 2000);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'hero') => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const file = e.target.files[0];
+    setCurrentUpload(type);
+
+    try {
+      const path = type === 'product'
+        ? `stores/${profile.id}/products/${Date.now()}_${file.name}`
+        : `stores/${profile.id}/hero/${Date.now()}_${file.name}`;
+
+      const url = await uploadImage(file, path);
+
+      if (type === 'product') {
+        setNewProduct(prev => ({ ...prev, image: url }));
+      } else {
+        setProfile({ ...profile, heroImage: url });
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setCurrentUpload(null);
+    }
   };
 
   const displayUrl = profile.domainStatus === 'active' && profile.customDomain
@@ -470,14 +498,38 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Hero Image URL</label>
-                <input
-                  type="text" value={profile.heroImage || ''}
-                  onChange={e => setProfile({ ...profile, heroImage: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                />
-                <p className="text-[10px] text-gray-400 mt-2 font-bold">This image will appear at the top of your store homepage.</p>
+                <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Hero Image</label>
+                <div className="flex gap-6 items-start">
+                  <div className="w-32 h-20 bg-gray-50 rounded-2xl border-2 border-gray-100 overflow-hidden shrink-0">
+                    {profile.heroImage ? (
+                      <img src={profile.heroImage} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <Layout className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => handleImageUpload(e, 'hero')}
+                        className="hidden"
+                        id="hero-upload"
+                        disabled={currentUpload === 'hero'}
+                      />
+                      <label
+                        htmlFor="hero-upload"
+                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm cursor-pointer transition-all ${currentUpload === 'hero' ? 'bg-gray-100 text-gray-400' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                      >
+                        {currentUpload === 'hero' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                        {currentUpload === 'hero' ? 'Uploading...' : 'Upload New Banner'}
+                      </label>
+                      <p className="text-[10px] text-gray-400 mt-2 font-bold leading-relaxed">Recommended size: 1200x600px. JPG or PNG.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

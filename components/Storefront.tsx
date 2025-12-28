@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Product, StoreProfile } from '../types';
 import {
   Plus, Tag, Search, SlidersHorizontal, X, AlertCircle,
-  Calendar, ShoppingBag, ChevronRight, Star, ArrowUpRight,
+  Calendar, ShoppingBag, ChevronRight, ArrowUpRight,
   Filter, Grid3X3, List as ListIcon, Truck
 } from 'lucide-react';
 
@@ -280,12 +280,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
                   </div>
 
                   <div className="px-2">
-                    <div className="flex items-center gap-1 mb-2">
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      ))}
-                      <span className="text-[10px] font-bold text-gray-400 ml-1">4.9 (12 reviews)</span>
-                    </div>
+
                     <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
                       {p.name}
                     </h3>

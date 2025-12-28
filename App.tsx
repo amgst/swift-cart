@@ -65,7 +65,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
 
   // Handle URL-based routing for store slugs
   useEffect(() => {
-    if (storeSlug) {
+    if (storeSlug && !authLoading) {
       // Load store by slug
       const loadStoreBySlug = async () => {
         try {
@@ -75,9 +75,11 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
             // Determine view based on URL path
             if (location.pathname.includes('/admin')) {
               // Admin route - require authentication and ownership
+              // Wait for auth to finish loading before checking
               if (!user) {
-                // Not logged in, redirect to login
-                navigate('/login');
+                // Not logged in, redirect to login with return URL
+                const returnUrl = `/store/${storeSlug}/admin`;
+                navigate(`/login?return=${encodeURIComponent(returnUrl)}`);
                 return;
               }
               if (store.profile.userId !== user.uid) {
@@ -101,7 +103,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
       };
       loadStoreBySlug();
     }
-  }, [storeSlug, navigate, location.pathname, user]);
+  }, [storeSlug, navigate, location.pathname, user, authLoading]);
 
   // Sync view with URL path
   useEffect(() => {
@@ -353,7 +355,16 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
       <main className="flex-grow container mx-auto py-8">
         {view === 'login' && (
           <Login 
-            onSuccess={() => navigate('/dashboard')}
+            onSuccess={() => {
+              // Check if there's a return URL in the query params
+              const params = new URLSearchParams(location.search);
+              const returnUrl = params.get('return');
+              if (returnUrl) {
+                navigate(returnUrl);
+              } else {
+                navigate('/dashboard');
+              }
+            }}
             onCancel={() => navigate('/')}
             onSwitchToRegister={() => navigate('/register')}
           />

@@ -69,11 +69,8 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
           <div className="bg-white rounded-[3rem] p-12 border border-gray-100 shadow-sm space-y-8">
             <div>
               <h2 className="text-2xl font-bold mb-4">Our Story</h2>
-              <p className="text-gray-600 leading-relaxed text-lg">
-                Welcome to {profile.name}, your number one source for all things {profile.tagline}. We're dedicated to giving you the very best of products, with a focus on dependability, customer service, and uniqueness.
-              </p>
-              <p className="text-gray-600 leading-relaxed text-lg mt-4">
-                Founded by passionate entrepreneurs, {profile.name} has come a long way from its beginnings. When we first started out, our passion for quality drove us to do intense research so that {profile.name} can offer you "the world's most advanced products". We now serve customers all over Pakistan and are thrilled that we're able to turn our passion into our own website.
+              <p className="text-xl text-gray-500 font-medium leading-relaxed mb-6">
+                {profile.aboutContent || `Welcome to ${profile.name}. We are dedicated to providing the best quality products to our customers. Our journey began with a simple passion for excellence and a commitment to customer satisfaction.`}
               </p>
             </div>
             <div className="h-px bg-gray-100" />
@@ -147,7 +144,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
           {/* Store Hero / Banner */}
           <section className="relative h-[400px] md:h-[500px] rounded-[3rem] overflow-hidden group">
             <img
-              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
+              src={profile.heroImage || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"}
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               alt="Store Banner"
             />

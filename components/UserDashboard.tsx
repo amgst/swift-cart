@@ -13,13 +13,13 @@ interface UserDashboardProps {
   onLogout: () => void;
 }
 
-const UserDashboard: React.FC<UserDashboardProps> = ({ 
-  user, 
-  stores, 
-  onCreateStore, 
-  onVisitStore, 
+const UserDashboard: React.FC<UserDashboardProps> = ({
+  user,
+  stores,
+  onCreateStore,
+  onVisitStore,
   onManageStore,
-  onLogout 
+  onLogout
 }) => {
   const handleLogout = async () => {
     await logoutUser();
@@ -99,7 +99,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-400 font-bold">Store URL</span>
                   <span className="text-indigo-600 font-black">
-                    swiftcart.pk/s/{userStore.profile.storeSlug}
+                    swiftcart.pk/shop/{userStore.profile.storeSlug}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">

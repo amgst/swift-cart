@@ -18,8 +18,8 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
   return (
     <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div 
-          className="flex items-center gap-2 cursor-pointer group" 
+        <div
+          className="flex items-center gap-2 cursor-pointer group"
           onClick={() => profile ? setView('store') : setView('landing')}
         >
           <div style={{ backgroundColor: profile?.brandColor || '#4f46e5' }} className="p-2 rounded-lg transition-colors shadow-md group-hover:scale-105 transition-transform">
@@ -34,7 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
           {!profile && (
             <>
               {user && (
-                <Link 
+                <Link
                   to="/dashboard"
                   className="px-4 py-2 text-sm font-bold text-gray-700 hover:text-indigo-600 transition-colors"
                 >
@@ -42,7 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
                 </Link>
               )}
               {!user && (
-                <Link 
+                <Link
                   to="/login"
                   className="px-4 py-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
                 >
@@ -53,20 +53,20 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
           )}
           {!profile ? (
             <div className="hidden md:flex items-center gap-6">
-              <Link 
+              <Link
                 to="/"
                 className={`font-bold text-sm transition-colors ${location.pathname === '/' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
               >
                 Home
               </Link>
-              <Link 
+              <Link
                 to="/marketplace"
                 className={`flex items-center gap-2 font-bold text-sm transition-colors ${location.pathname === '/marketplace' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
               >
                 <Globe className="w-4 h-4" />
                 Explore Stores
               </Link>
-              <Link 
+              <Link
                 to="/tracking"
                 className={`flex items-center gap-2 font-bold text-sm transition-colors ${location.pathname === '/tracking' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
               >
@@ -78,17 +78,17 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
             <>
               {profile && (
                 <>
-                  <Link 
-                    to={`/s/${profile.storeSlug}`}
-                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/s/${profile.storeSlug}` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
+                  <Link
+                    to={`/shop/${profile.storeSlug}`}
+                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/shop/${profile.storeSlug}` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
                   >
                     <Store className="w-4 h-4" />
                     <span className="hidden lg:inline text-sm">Shop View</span>
                   </Link>
-                  
-                  <Link 
-                    to={`/store/${profile.storeSlug}/admin`}
-                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/store/${profile.storeSlug}/admin` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
+
+                  <Link
+                    to={`/shop/${profile.storeSlug}/admin`}
+                    className={`flex items-center gap-2 font-medium transition-colors ${location.pathname === `/shop/${profile.storeSlug}/admin` ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
                   >
                     <Settings className="w-4 h-4" />
                     <span className="hidden lg:inline text-sm">Manage</span>
@@ -98,7 +98,7 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
 
               <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
 
-              <button 
+              <button
                 onClick={onExitStore}
                 className="hidden sm:flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors"
                 title="Exit to Platform"
@@ -111,7 +111,7 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
 
           <div className="h-6 w-px bg-gray-200 mx-1" />
 
-          <button 
+          <button
             onClick={onCartClick}
             disabled={!profile || view === 'admin'}
             className={`relative p-2 transition-colors ${profile && view !== 'admin' ? 'text-gray-600 hover:text-indigo-600' : 'text-gray-300 pointer-events-none'}`}

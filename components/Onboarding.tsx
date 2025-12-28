@@ -24,14 +24,14 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
 
   const next = () => {
     setError('');
-    
+
     // Validate step 1
     if (step === 1) {
       if (!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug)) {
         return;
       }
     }
-    
+
     // Validate step 2
     if (step === 2) {
       if (!formData.email || !formData.password || !formData.confirmPassword || !formData.displayName) {
@@ -47,7 +47,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
         return;
       }
     }
-    
+
     setStep(s => s + 1);
   };
 
@@ -73,18 +73,18 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
           <div className="space-y-8">
             <div className="flex items-center gap-4 text-indigo-600 mb-8">
               <div className="bg-indigo-50 p-3 rounded-2xl">
-                 <Store className="w-8 h-8" />
+                <Store className="w-8 h-8" />
               </div>
               <span className="text-xl font-black uppercase tracking-widest">The Identity</span>
             </div>
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Public Store Name</label>
-              <input 
+              <input
                 type="text" required value={formData.name}
                 onChange={e => {
                   const name = e.target.value;
                   setFormData({
-                    ...formData, 
+                    ...formData,
                     name,
                     storeSlug: generateSlug(name) || formData.storeSlug
                   });
@@ -96,28 +96,28 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Store URL Slug</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">swiftcart.pk/s/</span>
-                <input 
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">swiftcart.pk/shop/</span>
+                <input
                   type="text" required value={formData.storeSlug}
-                  onChange={e => setFormData({...formData, storeSlug: generateSlug(e.target.value)})}
+                  onChange={e => setFormData({ ...formData, storeSlug: generateSlug(e.target.value) })}
                   placeholder="my-store"
                   className="w-full pl-40 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-2">Your store will be available at: swiftcart.pk/s/{formData.storeSlug || 'my-store'}</p>
+              <p className="text-xs text-gray-400 mt-2">Your store will be available at: swiftcart.pk/shop/{formData.storeSlug || 'my-store'}</p>
             </div>
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Store Slogan</label>
-              <input 
+              <input
                 type="text" required value={formData.tagline}
-                onChange={e => setFormData({...formData, tagline: e.target.value})}
+                onChange={e => setFormData({ ...formData, tagline: e.target.value })}
                 placeholder="e.g. Fast COD across Pakistan"
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-8 py-5 outline-none focus:border-indigo-600 transition-colors font-medium"
               />
             </div>
-            <button 
-              onClick={next} 
-              disabled={!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug)} 
+            <button
+              onClick={next}
+              disabled={!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug)}
               className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 disabled:opacity-30 shadow-xl shadow-indigo-100 active:scale-95 transition-all"
             >
               CONTINUE <ArrowRight className="w-6 h-6" />
@@ -129,11 +129,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
           <div className="space-y-8">
             <div className="flex items-center gap-4 text-indigo-600 mb-8">
               <div className="bg-indigo-50 p-3 rounded-2xl">
-                 <User className="w-8 h-8" />
+                <User className="w-8 h-8" />
               </div>
               <span className="text-xl font-black uppercase tracking-widest">Create Account</span>
             </div>
-            
+
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
                 {error}
@@ -148,7 +148,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
                   type="text"
                   required
                   value={formData.displayName}
-                  onChange={e => setFormData({...formData, displayName: e.target.value})}
+                  onChange={e => setFormData({ ...formData, displayName: e.target.value })}
                   placeholder="John Doe"
                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
                 />
@@ -159,11 +159,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="email" 
-                  required 
+                <input
+                  type="email"
+                  required
                   value={formData.email}
-                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
                   placeholder="you@company.pk"
                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
                 />
@@ -175,11 +175,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="password" 
-                  required 
+                <input
+                  type="password"
+                  required
                   value={formData.password}
-                  onChange={e => setFormData({...formData, password: e.target.value})}
+                  onChange={e => setFormData({ ...formData, password: e.target.value })}
                   placeholder="••••••••"
                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
                 />
@@ -191,18 +191,18 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="password" 
-                  required 
+                <input
+                  type="password"
+                  required
                   value={formData.confirmPassword}
-                  onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                  onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
                   placeholder="••••••••"
                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
                 />
               </div>
             </div>
 
-            <button 
+            <button
               onClick={next}
               disabled={!formData.email || !formData.password || !formData.confirmPassword || !formData.displayName}
               className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 disabled:opacity-30 shadow-xl shadow-indigo-100 active:scale-95 transition-all"
@@ -216,28 +216,28 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
           <div className="space-y-8">
             <div className="flex items-center gap-4 text-indigo-600 mb-8">
               <div className="bg-indigo-50 p-3 rounded-2xl">
-                 <Palette className="w-8 h-8" />
+                <Palette className="w-8 h-8" />
               </div>
               <span className="text-xl font-black uppercase tracking-widest">Brand Style</span>
             </div>
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-6">Choose your Primary Brand Color</label>
               <div className="flex flex-col sm:flex-row items-center gap-10 bg-gray-50 p-8 rounded-[2rem] border-2 border-gray-100">
-                <input 
+                <input
                   type="color" value={formData.brandColor}
-                  onChange={e => setFormData({...formData, brandColor: e.target.value})}
+                  onChange={e => setFormData({ ...formData, brandColor: e.target.value })}
                   className="w-32 h-32 rounded-[2rem] cursor-pointer p-1 bg-white shadow-xl ring-4 ring-white"
                 />
                 <div className="flex-1 text-center sm:text-left">
-                   <h5 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-2">{formData.brandColor}</h5>
-                   <p className="text-sm text-gray-400 leading-relaxed">This color will be used for your cart icons, purchase buttons, and checkout highlights.</p>
+                  <h5 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-2">{formData.brandColor}</h5>
+                  <p className="text-sm text-gray-400 leading-relaxed">This color will be used for your cart icons, purchase buttons, and checkout highlights.</p>
                 </div>
               </div>
             </div>
             <div className="bg-indigo-50 p-6 rounded-2xl text-xs font-bold text-indigo-700 leading-relaxed">
-               Note: You can change all these settings later from your Merchant Dashboard.
+              Note: You can change all these settings later from your Merchant Dashboard.
             </div>
-            <button 
+            <button
               onClick={() => {
                 const { confirmPassword, ...dataToComplete } = formData;
                 onComplete({
@@ -258,7 +258,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
           </div>
         )}
       </div>
-      
+
       <p className="text-center mt-12 text-gray-400 text-xs font-bold uppercase tracking-widest">
         Protected by SwiftCart SaaS Cloud
       </p>

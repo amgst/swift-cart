@@ -28,19 +28,19 @@ const AppRouter: React.FC = () => {
         <Route path="/" element={<AppWithView view="landing" />} />
         <Route path="/marketplace" element={<AppWithView view="marketplace" />} />
         <Route path="/tracking" element={<AppWithView view="tracking" />} />
-        
+
         {/* Store Routes - SEO Friendly URLs */}
-        <Route path="/s/:slug" element={<StoreRoute />} />
-        <Route path="/store/:slug/admin" element={<AdminRoute />} />
-        
+        <Route path="/shop/:slug" element={<StoreRoute />} />
+        <Route path="/shop/:slug/admin" element={<AdminRoute />} />
+
         {/* Auth Routes */}
         <Route path="/login" element={<AppWithView view="login" />} />
         <Route path="/register" element={<AppWithView view="register" />} />
-        
+
         {/* Protected Routes */}
         <Route path="/dashboard" element={<AppWithView view="dashboard" />} />
         <Route path="/onboarding" element={<AppWithView view="onboarding" />} />
-        
+
         {/* Catch all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

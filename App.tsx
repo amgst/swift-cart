@@ -78,14 +78,14 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
               // Wait for auth to finish loading before checking
               if (!user) {
                 // Not logged in, redirect to login with return URL
-                const returnUrl = `/store/${storeSlug}/admin`;
+                const returnUrl = `/shop/${storeSlug}/admin`;
                 navigate(`/login?return=${encodeURIComponent(returnUrl)}`);
                 return;
               }
               if (store.profile.userId !== user.uid) {
                 // Not the store owner, redirect to storefront
                 alert('You do not have permission to access this admin panel.');
-                navigate(`/s/${storeSlug}`);
+                navigate(`/shop/${storeSlug}`);
                 return;
               }
               setView('admin');
@@ -386,13 +386,13 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
             onVisitStore={(id) => {
               const store = stores.find(s => s.profile.id === id);
               if (store) {
-                navigate(`/s/${store.profile.storeSlug}`);
+                navigate(`/shop/${store.profile.storeSlug}`);
               }
             }}
             onManageStore={(id) => {
               const store = stores.find(s => s.profile.id === id);
               if (store) {
-                navigate(`/store/${store.profile.storeSlug}/admin`);
+                navigate(`/shop/${store.profile.storeSlug}/admin`);
               }
             }}
             onLogout={() => {
@@ -423,13 +423,13 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
             onVisitStore={(id) => {
               const store = stores.find(s => s.profile.id === id);
               if (store) {
-                navigate(`/s/${store.profile.storeSlug}`);
+                navigate(`/shop/${store.profile.storeSlug}`);
               }
             }}
             onManageStore={(id) => {
               const store = stores.find(s => s.profile.id === id);
               if (store) {
-                navigate(`/store/${store.profile.storeSlug}/admin`);
+                navigate(`/shop/${store.profile.storeSlug}/admin`);
               }
             }}
           />
@@ -441,7 +441,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
             onVisitStore={(id) => {
               const store = stores.find(s => s.profile.id === id);
               if (store) {
-                navigate(`/s/${store.profile.storeSlug}`);
+                navigate(`/shop/${store.profile.storeSlug}`);
               }
             }} 
           />
@@ -486,7 +486,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
                 onAddProduct={(p) => updateActiveStore(s => ({ ...s, products: [p, ...s.products] }))} 
                 onDeleteProduct={(id) => updateActiveStore(s => ({ ...s, products: s.products.filter(item => item.id !== id) }))} 
                 orders={activeStore.orders}
-                onViewStore={() => activeStore ? navigate(`/s/${activeStore.profile.storeSlug}`) : navigate('/')}
+                onViewStore={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')}
               />
             )}
             {view === 'checkout' && (
@@ -494,11 +494,11 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
                 profile={activeStore.profile}
                 cart={cart} 
                 onPlaceOrder={placeOrder} 
-                onBack={() => activeStore ? navigate(`/s/${activeStore.profile.storeSlug}`) : navigate('/')} 
+                onBack={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')} 
               />
             )}
             {view === 'success' && (
-              <SuccessView profile={activeStore.profile} order={lastOrder} onContinue={() => navigate(`/s/${activeStore.profile.storeSlug}`)} />
+              <SuccessView profile={activeStore.profile} order={lastOrder} onContinue={() => navigate(`/shop/${activeStore.profile.storeSlug}`)} />
             )}
           </>
         )}

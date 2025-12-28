@@ -18,7 +18,7 @@ import UserDashboard from './components/UserDashboard';
 // Fix: Added missing ShoppingBag icon import from lucide-react
 import { ShoppingBag } from 'lucide-react';
 import { storeService, cartService } from './firebase/firestore';
-import { onAuthStateChange, getCurrentUser } from './firebase/auth';
+import { onAuthStateChange, getCurrentUser, registerUser } from './firebase/auth';
 import { User } from 'firebase/auth';
 
 interface AppProps {
@@ -74,6 +74,18 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
             setActiveStoreId(store.profile.id);
             // Determine view based on URL path
             if (location.pathname.includes('/admin')) {
+              // Admin route - require authentication and ownership
+              if (!user) {
+                // Not logged in, redirect to login
+                navigate('/login');
+                return;
+              }
+              if (store.profile.userId !== user.uid) {
+                // Not the store owner, redirect to storefront
+                alert('You do not have permission to access this admin panel.');
+                navigate(`/s/${storeSlug}`);
+                return;
+              }
               setView('admin');
             } else {
               setView('store');
@@ -89,7 +101,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
       };
       loadStoreBySlug();
     }
-  }, [storeSlug, navigate, location.pathname]);
+  }, [storeSlug, navigate, location.pathname, user]);
 
   // Sync view with URL path
   useEffect(() => {
@@ -104,6 +116,25 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
       else if (path === '/onboarding') setView('onboarding');
     }
   }, [location.pathname, storeSlug]);
+
+  // Protect dashboard route - redirect to login if not authenticated
+  useEffect(() => {
+    if (view === 'dashboard' && !authLoading && !user) {
+      navigate('/login');
+    }
+  }, [view, user, authLoading, navigate]);
+
+  // Protect onboarding route - redirect to dashboard if already logged in and has store
+  useEffect(() => {
+    if (view === 'onboarding' && !authLoading && user) {
+      // Check if user already has a store (one store per merchant limit)
+      const userStores = stores.filter(s => s.profile.userId === user.uid);
+      if (userStores.length > 0) {
+        alert('You already have a store. Each merchant can only create one store.');
+        navigate('/dashboard');
+      }
+    }
+  }, [view, user, authLoading, navigate, stores]);
 
   // Initialize Firebase subscriptions
   useEffect(() => {
@@ -158,10 +189,35 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
 
   const activeStore = stores.find(s => s.profile.id === activeStoreId) || null;
 
-  const createStore = useCallback(async (profileData: Partial<StoreProfile>) => {
-    if (!user) {
+  const createStore = useCallback(async (
+    profileData: Partial<StoreProfile> & { email?: string; password?: string; displayName?: string }
+  ) => {
+    let currentUser = user;
+
+    // If user is not logged in, register them first
+    if (!currentUser && profileData.email && profileData.password && profileData.displayName) {
+      try {
+        currentUser = await registerUser(profileData.email, profileData.password, profileData.displayName);
+        // User is now logged in, auth state will update automatically
+      } catch (error: any) {
+        console.error('Error registering user:', error);
+        alert(error.message || 'Failed to create account. Please try again.');
+        return;
+      }
+    }
+
+    // At this point, user should be logged in
+    if (!currentUser) {
       alert('Please login to create a store');
       navigate('/login');
+      return;
+    }
+
+    // Check if user already has a store (one store per merchant limit)
+    const userStores = stores.filter(s => s.profile.userId === currentUser.uid);
+    if (userStores.length > 0) {
+      alert('You already have a store. Each merchant can only create one store.');
+      navigate('/dashboard');
       return;
     }
 
@@ -175,8 +231,8 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         subscriptionStatus: 'active',
         planName: 'Local Hero Plan',
         expiryDate: Date.now() + (30 * 24 * 60 * 60 * 1000),
-        ownerEmail: user.email || profileData.ownerEmail || '',
-        userId: user.uid,
+        ownerEmail: currentUser.email || profileData.ownerEmail || profileData.email || '',
+        userId: currentUser.uid,
         storeSlug: profileData.storeSlug || storeId
       },
       products: [],
@@ -190,7 +246,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
       console.error('Error creating store:', error);
       alert('Failed to create store. Please try again.');
     }
-  }, [user, navigate]);
+  }, [user, navigate, stores]);
 
   const updateActiveStore = useCallback(async (updater: (store: MerchantStore) => MerchantStore) => {
     if (!activeStoreId) return;
@@ -340,9 +396,17 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
             stores={stores}
             onStartOnboarding={() => {
               if (user) {
-                navigate('/onboarding');
+                // Check if user already has a store
+                const userStores = stores.filter(s => s.profile.userId === user.uid);
+                if (userStores.length > 0) {
+                  alert('You already have a store. Each merchant can only create one store.');
+                  navigate('/dashboard');
+                } else {
+                  navigate('/onboarding');
+                }
               } else {
-                navigate('/login');
+                // New merchant - go directly to onboarding (will register during onboarding)
+                navigate('/onboarding');
               }
             }}
             onVisitStore={(id) => {
@@ -378,7 +442,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
         
         {view === 'onboarding' && (
           <Onboarding 
-            onCancel={() => navigate(user ? '/dashboard' : '/')}
+            onCancel={() => user ? navigate('/dashboard') : navigate('/')}
             onComplete={(data) => {
               // Store temporarily in localStorage for payment step
               localStorage.setItem('pending_onboarding', JSON.stringify(data));
@@ -403,7 +467,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug }) => {
             {view === 'store' && (
               <Storefront profile={activeStore.profile} products={activeStore.products} onAddToCart={addToCart} />
             )}
-            {view === 'admin' && (
+            {view === 'admin' && user && activeStore.profile.userId === user.uid && (
               <AdminPanel 
                 profile={activeStore.profile}
                 setProfile={(p) => updateActiveStore(s => ({ ...s, profile: p }))}

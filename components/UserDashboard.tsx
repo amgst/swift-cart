@@ -27,6 +27,8 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
   };
 
   const userStores = stores.filter(store => store.profile?.userId === user.uid);
+  const hasStore = userStores.length > 0;
+  const userStore = userStores[0]; // Only one store per merchant
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
@@ -35,7 +37,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
           <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-2">
             Welcome, {user.displayName || user.email}
           </h1>
-          <p className="text-gray-500 font-medium">Manage your stores and grow your business</p>
+          <p className="text-gray-500 font-medium">Manage your store and grow your business</p>
         </div>
         <button
           onClick={handleLogout}
@@ -49,83 +51,83 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
       <div className="bg-white rounded-[3rem] border border-gray-100 shadow-xl p-12 mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">My Stores</h2>
-            <p className="text-gray-500">Create and manage your online stores</p>
+            <h2 className="text-3xl font-black text-gray-900 mb-2">My Store</h2>
+            <p className="text-gray-500">Manage your online store</p>
           </div>
-          <button
-            onClick={onCreateStore}
-            className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-colors shadow-xl shadow-indigo-100 flex items-center justify-center gap-3"
-          >
-            <Plus className="w-6 h-6" />
-            Create New Store
-          </button>
+          {!hasStore && (
+            <button
+              onClick={onCreateStore}
+              className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-colors shadow-xl shadow-indigo-100 flex items-center justify-center gap-3"
+            >
+              <Plus className="w-6 h-6" />
+              Create Store
+            </button>
+          )}
         </div>
 
-        {userStores.length === 0 ? (
+        {!hasStore ? (
           <div className="text-center py-20 border-4 border-dashed border-gray-200 rounded-[2rem]">
             <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
               <Store className="w-12 h-12" />
             </div>
-            <h3 className="text-2xl font-black text-gray-400 mb-4">No stores yet</h3>
-            <p className="text-gray-400 mb-8">Create your first store to start selling</p>
+            <h3 className="text-2xl font-black text-gray-400 mb-4">No store yet</h3>
+            <p className="text-gray-400 mb-8">Create your store to start selling</p>
             <button
               onClick={onCreateStore}
               className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-colors shadow-xl shadow-indigo-100"
             >
-              Create Your First Store
+              Create Your Store
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {userStores.map(store => (
-              <div key={store.profile.id} className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100 hover:shadow-xl transition-all group">
-                <div className="flex items-start justify-between mb-6">
-                  <div
-                    style={{ backgroundColor: store.profile.brandColor }}
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-xl"
-                  >
-                    <Store className="w-8 h-8" />
-                  </div>
-                  <span className="text-xs font-bold text-gray-400">{store.profile.id}</span>
+          <div className="max-w-4xl">
+            <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100 hover:shadow-xl transition-all group">
+              <div className="flex items-start justify-between mb-6">
+                <div
+                  style={{ backgroundColor: userStore.profile.brandColor }}
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-xl"
+                >
+                  <Store className="w-8 h-8" />
                 </div>
+                <span className="text-xs font-bold text-gray-400">{userStore.profile.id}</span>
+              </div>
 
-                <h3 className="text-2xl font-black text-gray-900 mb-2">{store.profile.name}</h3>
-                <p className="text-sm text-gray-500 mb-6 line-clamp-2">{store.profile.tagline}</p>
+              <h3 className="text-2xl font-black text-gray-900 mb-2">{userStore.profile.name}</h3>
+              <p className="text-sm text-gray-500 mb-6 line-clamp-2">{userStore.profile.tagline}</p>
 
-                <div className="mb-6 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400 font-bold">Store URL</span>
-                    <span className="text-indigo-600 font-black">
-                      swiftcart.pk/s/{store.profile.storeSlug}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400 font-bold">Products</span>
-                    <span className="text-gray-900 font-black">{store.products.length}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400 font-bold">Orders</span>
-                    <span className="text-gray-900 font-black">{store.orders.length}</span>
-                  </div>
+              <div className="mb-6 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-400 font-bold">Store URL</span>
+                  <span className="text-indigo-600 font-black">
+                    swiftcart.pk/s/{userStore.profile.storeSlug}
+                  </span>
                 </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => onManageStore(store.profile.id)}
-                    className="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-sm font-black text-gray-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Manage
-                  </button>
-                  <button
-                    onClick={() => onVisitStore(store.profile.id)}
-                    className="p-3 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-indigo-600 transition-all"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                  </button>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-400 font-bold">Products</span>
+                  <span className="text-gray-900 font-black">{userStore.products.length}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-400 font-bold">Orders</span>
+                  <span className="text-gray-900 font-black">{userStore.orders.length}</span>
                 </div>
               </div>
-            ))}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => onManageStore(userStore.profile.id)}
+                  className="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-sm font-black text-gray-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Manage Store
+                </button>
+                <button
+                  onClick={() => onVisitStore(userStore.profile.id)}
+                  className="p-3 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-indigo-600 transition-all"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

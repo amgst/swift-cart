@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { StoreProfile } from '../types';
-import { Store, Mail, Palette, Type, ArrowRight, X } from 'lucide-react';
+import { Store, Mail, Palette, Lock, User, ArrowRight, X } from 'lucide-react';
 import { generateSlug, isValidSlug } from '../utils/slug';
 
 interface OnboardingProps {
-  onComplete: (data: Partial<StoreProfile>) => void;
+  onComplete: (data: Partial<StoreProfile> & { email: string; password: string; displayName: string }) => void;
   onCancel: () => void;
 }
 
@@ -13,12 +13,43 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
   const [formData, setFormData] = useState({
     name: '',
     tagline: '',
-    ownerEmail: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    displayName: '',
     brandColor: '#4f46e5',
     storeSlug: ''
   });
+  const [error, setError] = useState('');
 
-  const next = () => setStep(s => s + 1);
+  const next = () => {
+    setError('');
+    
+    // Validate step 1
+    if (step === 1) {
+      if (!formData.name || !formData.tagline || !formData.storeSlug || !isValidSlug(formData.storeSlug)) {
+        return;
+      }
+    }
+    
+    // Validate step 2
+    if (step === 2) {
+      if (!formData.email || !formData.password || !formData.confirmPassword || !formData.displayName) {
+        setError('Please fill in all fields');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
+    }
+    
+    setStep(s => s + 1);
+  };
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4">
@@ -30,7 +61,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
             ))}
           </div>
           <h1 className="text-4xl font-black text-gray-900 tracking-tight">Setup Your Empire</h1>
-          <p className="text-gray-500 font-medium">Step {step} of 3 &bull; Business Registration</p>
+          <p className="text-gray-500 font-medium">Step {step} of 3 &bull; Store Setup</p>
         </div>
         <button onClick={onCancel} className="p-3 hover:bg-gray-100 rounded-2xl transition-colors">
           <X className="w-6 h-6 text-gray-400" />
@@ -98,21 +129,84 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
           <div className="space-y-8">
             <div className="flex items-center gap-4 text-indigo-600 mb-8">
               <div className="bg-indigo-50 p-3 rounded-2xl">
-                 <Mail className="w-8 h-8" />
+                 <User className="w-8 h-8" />
               </div>
-              <span className="text-xl font-black uppercase tracking-widest">Admin Contact</span>
+              <span className="text-xl font-black uppercase tracking-widest">Create Account</span>
             </div>
+            
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
+                {error}
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Owner Business Email</label>
-              <input 
-                type="email" required value={formData.ownerEmail}
-                onChange={e => setFormData({...formData, ownerEmail: e.target.value})}
-                placeholder="you@company.pk"
-                className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-8 py-5 outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
-              />
-              <p className="text-xs text-gray-400 mt-4 leading-relaxed">This email will be used for your private dashboard login and billing receipts.</p>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Your Name</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  required
+                  value={formData.displayName}
+                  onChange={e => setFormData({...formData, displayName: e.target.value})}
+                  placeholder="John Doe"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
+                />
+              </div>
             </div>
-            <button onClick={next} disabled={!formData.ownerEmail} className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                  type="email" 
+                  required 
+                  value={formData.email}
+                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  placeholder="you@company.pk"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">This will be used for login and billing receipts.</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                  type="password" 
+                  required 
+                  value={formData.password}
+                  onChange={e => setFormData({...formData, password: e.target.value})}
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">Minimum 6 characters</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                  type="password" 
+                  required 
+                  value={formData.confirmPassword}
+                  onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
+                />
+              </div>
+            </div>
+
+            <button 
+              onClick={next}
+              disabled={!formData.email || !formData.password || !formData.confirmPassword || !formData.displayName}
+              className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 disabled:opacity-30 shadow-xl shadow-indigo-100 active:scale-95 transition-all"
+            >
               NEXT STEP <ArrowRight className="w-6 h-6" />
             </button>
           </div>
@@ -144,7 +238,19 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
                Note: You can change all these settings later from your Merchant Dashboard.
             </div>
             <button 
-              onClick={() => onComplete(formData)}
+              onClick={() => {
+                const { confirmPassword, ...dataToComplete } = formData;
+                onComplete({
+                  name: dataToComplete.name,
+                  tagline: dataToComplete.tagline,
+                  storeSlug: dataToComplete.storeSlug,
+                  brandColor: dataToComplete.brandColor,
+                  ownerEmail: dataToComplete.email,
+                  email: dataToComplete.email,
+                  password: dataToComplete.password,
+                  displayName: dataToComplete.displayName
+                });
+              }}
               className="w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-2xl"
             >
               GO TO PAYMENT <ArrowRight className="w-6 h-6" />

@@ -18,7 +18,7 @@ import UserDashboard from './components/UserDashboard';
 // Fix: Added missing ShoppingBag icon import from lucide-react
 import { ShoppingBag } from 'lucide-react';
 import { storeService, cartService } from './firebase/firestore';
-import { onAuthStateChange, getCurrentUser, registerUser } from './firebase/auth';
+import { onAuthStateChange, getCurrentUser, registerUser, logoutUser } from './firebase/auth';
 import { User } from 'firebase/auth';
 
 interface AppProps {
@@ -84,9 +84,9 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
                 return;
               }
               if (store.profile.userId !== user.uid) {
-                // Not the store owner, redirect to storefront
-                alert('You do not have permission to access this admin panel.');
-                navigate(`/shop/${storeSlug}`);
+                // Not the store owner, logout and redirect to login to allow switch account
+                console.log('Permission denied: User ID mismatch. Logging out to allow account switch.');
+                logoutUser();
                 return;
               }
               setView('admin');

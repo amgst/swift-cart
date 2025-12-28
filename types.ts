@@ -26,6 +26,8 @@ export interface StoreProfile {
   customDomain?: string;
   domainStatus?: 'pending' | 'active' | 'error';
   phone?: string; // WhatsApp number for notifications
+  heroImage?: string;
+  aboutContent?: string;
 }
 
 export interface MerchantStore {

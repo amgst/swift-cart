@@ -469,6 +469,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                   className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
                 />
               </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Hero Image URL</label>
+                <input
+                  type="text" value={profile.heroImage || ''}
+                  onChange={e => setProfile({ ...profile, heroImage: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                />
+                <p className="text-[10px] text-gray-400 mt-2 font-bold">This image will appear at the top of your store homepage.</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">About Us Story</label>
+              <textarea
+                value={profile.aboutContent || ''}
+                onChange={e => setProfile({ ...profile, aboutContent: e.target.value })}
+                placeholder="Tell your customers about how you started..."
+                className="w-full h-32 bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500 font-medium resize-none"
+              />
             </div>
 
             <div>

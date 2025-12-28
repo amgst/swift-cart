@@ -34,8 +34,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
     name: '',
     description: '',
     price: '',
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop'
+    category: 'Jewelry',
+    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=600&auto=format&fit=crop'
   });
 
   const handleAdd = (e: React.FormEvent) => {
@@ -50,8 +50,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
       image: newProduct.image
     });
     setNewProduct({
-      name: '', description: '', price: '', category: 'Electronics',
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop'
+      name: '', description: '', price: '', category: 'Jewelry',
+      image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=600&auto=format&fit=crop'
     });
     setIsAdding(false);
   };
@@ -186,7 +186,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                       type="text" required value={newProduct.name}
                       onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                      placeholder="e.g. Premium Leather Wallet"
+                      placeholder="e.g. Handcrafted Ruby Necklace"
                     />
                   </div>
                   <div>
@@ -214,7 +214,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                     <div>
                       <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Category</label>
                       <select value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 font-bold">
-                        <option>Electronics</option><option>Furniture</option><option>Lifestyle</option><option>Apparel</option>
+                        <option>Jewelry</option><option>Clothing</option><option>Home Decor</option><option>Art & Crafts</option><option>Accessories</option><option>Ceramics</option>
                       </select>
                     </div>
                   </div>

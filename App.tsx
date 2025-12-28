@@ -245,7 +245,8 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
     try {
       await storeService.createStore(newStore);
       setActiveStoreId(newStore.profile.id);
-      navigate('/dashboard');
+      // Redirect directly to the Merchant Portal (Admin Panel)
+      navigate(`/shop/${newStore.profile.storeSlug}/admin`);
     } catch (error) {
       console.error('Error creating store:', error);
       alert('Failed to create store. Please try again.');

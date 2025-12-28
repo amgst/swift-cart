@@ -90,7 +90,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel }) => {
                     storeSlug: generateSlug(name) || formData.storeSlug
                   });
                 }}
-                placeholder="e.g. Lahore Street Style"
+                placeholder="e.g. Fatima's Pottery"
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-8 py-5 outline-none focus:border-indigo-600 transition-colors text-lg font-bold"
               />
             </div>

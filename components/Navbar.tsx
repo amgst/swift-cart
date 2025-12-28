@@ -20,7 +20,13 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div
           className="flex items-center gap-2 cursor-pointer group"
-          onClick={() => profile ? setView('store') : setView('landing')}
+          onClick={() => {
+            if (profile) {
+              window.location.href = `/shop/${profile.storeSlug}`;
+            } else {
+              setView('landing');
+            }
+          }}
         >
           <div style={{ backgroundColor: profile?.brandColor || '#4f46e5' }} className="p-2 rounded-lg transition-colors shadow-md group-hover:scale-105 transition-transform">
             <ShoppingBag className="text-white w-5 h-5" />

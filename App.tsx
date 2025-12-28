@@ -529,11 +529,16 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2 space-y-6">
-              <div className="flex items-center gap-3">
+              <div
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')}
+              >
                 <div className="p-2 bg-indigo-600 rounded-lg text-white">
                   <ShoppingBag className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black text-gray-900">SwiftCart</span>
+                <span className="text-2xl font-black text-gray-900">
+                  {activeStore ? activeStore.profile.name : 'SwiftCart'}
+                </span>
               </div>
               <p className="text-gray-500 max-w-sm font-medium">Empowering the next generation of Pakistani merchants with robust Cash on Delivery e-commerce solutions.</p>
             </div>

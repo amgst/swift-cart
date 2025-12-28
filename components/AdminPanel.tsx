@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Product, Order, StoreProfile } from '../types';
-import { generateDescription } from '../services/gemini';
+import { generateDescription, analyzeProductImage } from '../services/gemini';
 import {
   Layout, Package, Users, Settings as SettingsIcon, Plus, Trash2, Edit2,
   ExternalLink, ChevronRight, Search, Filter, Camera,
@@ -33,6 +33,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [currentUpload, setCurrentUpload] = useState<'product' | 'hero' | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'success' | 'failed'>('idle');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
 
   const [newProduct, setNewProduct] = useState({
@@ -125,11 +126,42 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
     setCurrentUpload(type);
 
     try {
+      // 1. Start Image Upload
       const path = type === 'product'
         ? `stores/${profile.id}/products/${Date.now()}_${file.name}`
         : `stores/${profile.id}/hero/${Date.now()}_${file.name}`;
 
-      const url = await uploadImage(file, path);
+      const uploadPromise = uploadImage(file, path);
+
+      // 2. If it's a product image, Run AI Analysis in parallel
+      if (type === 'product') {
+        setIsAnalyzing(true);
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64String = reader.result as string;
+          // Extract the base64 data part (remove "data:image/jpeg;base64,")
+          const base64Data = base64String.split(',')[1];
+
+          try {
+            const analysis = await analyzeProductImage(base64Data);
+            if (analysis.name && analysis.description) {
+              setNewProduct(prev => ({
+                ...prev,
+                name: analysis.name,
+                description: analysis.description
+              }));
+            }
+          } catch (err) {
+            console.error("AI Analysis failed", err);
+          } finally {
+            setIsAnalyzing(false);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // 3. Wait for upload to finish
+      const url = await uploadPromise;
 
       if (type === 'product') {
         setNewProduct(prev => ({ ...prev, image: url }));
@@ -139,6 +171,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Failed to upload image. Please try again.');
+      setIsAnalyzing(false);
     } finally {
       setCurrentUpload(null);
     }
@@ -287,12 +320,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                           <img src={newProduct.image} alt="Preview" className="w-full h-full object-cover" />
                         ) : (
                           <div className="text-center p-4">
-                            {currentUpload === 'product' ? (
-                              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mx-auto" />
+                            {currentUpload === 'product' || isAnalyzing ? (
+                              <div className="flex flex-col items-center">
+                                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mx-auto mb-2" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 animate-pulse">
+                                  {isAnalyzing ? 'AI Analyzing...' : 'Uploading...'}
+                                </span>
+                              </div>
                             ) : (
                               <>
                                 <Upload className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                                <span className="text-xs text-gray-400 font-bold block">Click to Upload</span>
+                                <span className="text-xs text-gray-400 font-bold block">Upload & AI Scan</span>
                               </>
                             )}
                           </div>

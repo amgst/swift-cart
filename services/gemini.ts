@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 export const generateDescription = async (productName: string): Promise<string> => {
   // Fix: Directly initializing GoogleGenAI with process.env.API_KEY as per guidelines
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -26,5 +26,37 @@ export const generateDescription = async (productName: string): Promise<string> 
   } catch (error) {
     console.error("Gemini Error:", error);
     return "Failed to generate AI description.";
+  }
+};
+
+export const analyzeProductImage = async (imageBase64: string): Promise<{ name: string; description: string }> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: "Analyze this product image and generate a catchy Product Name (max 5 words) and a high-converting Description (max 2 sentences) for a Pakistani e-commerce store. Return strictly valid JSON in this format: { \"name\": \"...\", \"description\": \"...\" }" },
+            { inlineData: { mimeType: 'image/jpeg', data: imageBase64 } }
+          ]
+        }
+      ],
+      config: {
+        responseMimeType: 'application/json'
+      }
+    });
+
+    const text = response.text;
+    if (!text) return { name: '', description: '' };
+
+    // Clean up markdown code blocks if present
+    const cleanJson = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error("Gemini Vision Error:", error);
+    return { name: '', description: '' };
   }
 };

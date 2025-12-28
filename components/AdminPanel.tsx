@@ -246,9 +246,38 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ profile, setProfile, products, 
                       </select>
                     </div>
                   </div>
-                  <div className="bg-gray-50 p-6 rounded-[2rem] border border-dashed border-gray-200 text-center">
-                    <p className="text-xs font-bold text-gray-400">Preview Image URL (Preset for Demo)</p>
-                    <p className="text-[10px] text-gray-300 truncate mt-1">{newProduct.image}</p>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Product Image</label>
+                    <div className="relative group">
+                      <div className="aspect-square rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden hover:border-indigo-400 transition-colors">
+                        {newProduct.image && !newProduct.image.includes('unsplash') ? (
+                          <img src={newProduct.image} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-center p-4">
+                            {currentUpload === 'product' ? (
+                              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mx-auto" />
+                            ) : (
+                              <>
+                                <Upload className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                <span className="text-xs text-gray-400 font-bold block">Click to Upload</span>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={e => handleImageUpload(e, 'product')}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          disabled={currentUpload === 'product'}
+                        />
+                      </div>
+                      {currentUpload !== 'product' && (
+                        <div className="mt-2 text-center">
+                          <span className="text-[10px] text-gray-400 font-bold">or use default</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-4">
                     <button type="submit" style={{ backgroundColor: profile.brandColor }} className="flex-1 text-white py-5 rounded-2xl font-black shadow-lg">SAVE PRODUCT</button>

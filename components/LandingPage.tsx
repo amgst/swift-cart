@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowRight, Zap, ShieldCheck, Smartphone, Sparkles,
   Truck, Store, ExternalLink, Settings, Plus,
@@ -51,9 +52,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ stores, onStartOnboarding, on
               Start your store for free
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </button>
-            <a href="#marketplace" className="w-full sm:w-auto px-12 py-6 bg-white text-gray-700 border border-gray-200 rounded-2xl font-bold text-xl hover:bg-gray-50 transition-all shadow-sm">
+            <Link to="/marketplace" className="w-full sm:w-auto px-12 py-6 bg-white text-gray-700 border border-gray-200 rounded-2xl font-bold text-xl hover:bg-gray-50 transition-all shadow-sm flex items-center justify-center">
               Explore Marketplace
-            </a>
+            </Link>
           </div>
 
           {/* Floating Product Previews */}
@@ -234,60 +235,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ stores, onStartOnboarding, on
         </div>
       </section>
 
-      {/* --- MARKETPLACE FEED --- */}
-      <section id="marketplace" className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-          <div>
-            <h2 className="text-5xl font-black text-gray-900 tracking-tight mb-4">Live Showcase</h2>
-            <p className="text-xl text-gray-500">Discover thriving brands built on our infrastructure.</p>
-          </div>
-          <div className="bg-indigo-50 border border-indigo-100 px-6 py-3 rounded-2xl text-indigo-600 font-black flex items-center gap-2">
-            <Rocket className="w-5 h-5" />
-            {stores.length} Ventures Active
-          </div>
-        </div>
 
-        {stores.length === 0 ? (
-          <div className="bg-white border-4 border-dashed border-gray-200 rounded-[4rem] py-40 text-center group">
-            <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-300 group-hover:scale-110 transition-transform">
-              <MousePointer2 className="w-10 h-10" />
-            </div>
-            <h3 className="text-3xl font-black text-gray-400 mb-4">Your store could be here.</h3>
-            <p className="text-gray-400 max-w-sm mx-auto mb-10 text-lg">Be the pioneer in your niche. Start selling today.</p>
-            <button onClick={onStartOnboarding} className="px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-100">Claim Shop #001</button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {stores.map(store => (
-              <div key={store.profile.id} className="bg-white border border-gray-100 rounded-[3rem] p-10 shadow-sm hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] transition-all duration-500 group flex flex-col">
-                <div style={{ backgroundColor: store.profile.brandColor }} className="w-20 h-20 rounded-[1.75rem] flex items-center justify-center mb-10 text-white shadow-2xl group-hover:-translate-y-2 transition-transform duration-500">
-                  <Store className="w-10 h-10" />
-                </div>
-                <h3 className="text-3xl font-black text-gray-900 mb-4">{store.profile.name}</h3>
-                <p className="text-gray-500 leading-relaxed font-medium mb-12 line-clamp-2">
-                  {store.profile.tagline}
-                </p>
-
-                <div className="mt-auto pt-8 border-t border-gray-50 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Status</span>
-                    <span className="inline-flex items-center gap-2 text-xs font-bold text-green-600">
-                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      Accepting Orders
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onVisitStore(store.profile.id)}
-                    className="p-5 rounded-2xl bg-gray-50 text-gray-900 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-                  >
-                    <ArrowRight className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       {/* --- PRICING CTA --- */}
       <section className="max-w-7xl mx-auto px-4">

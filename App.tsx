@@ -355,7 +355,7 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
         user={user}
       />
 
-      <main className="flex-grow container mx-auto py-8">
+      <main className="flex-grow container mx-auto px-4 py-8">
         {view === 'login' && (
           <Login
             onSuccess={() => {

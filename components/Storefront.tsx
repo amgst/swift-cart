@@ -66,7 +66,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
       {page === 'about' && (
         <div className="max-w-4xl mx-auto py-12 px-4">
           <h1 className="text-5xl font-black text-gray-900 mb-8 text-center">About {profile.name}</h1>
-          <div className="bg-white rounded-[3rem] p-12 border border-gray-100 shadow-sm space-y-8">
+          <div className="bg-white rounded-2xl md:rounded-[3rem] p-8 md:p-12 border border-gray-100 shadow-sm space-y-8">
             <div>
               <h2 className="text-2xl font-bold mb-4">Our Story</h2>
               <p className="text-xl text-gray-500 font-medium leading-relaxed mb-6">
@@ -92,7 +92,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
         <div className="max-w-4xl mx-auto py-12 px-4">
           <h1 className="text-5xl font-black text-gray-900 mb-8 text-center">Contact Us</h1>
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-[3rem] p-12 border border-gray-100 shadow-sm h-full">
+            <div className="bg-white rounded-2xl md:rounded-[3rem] p-8 md:p-12 border border-gray-100 shadow-sm h-full">
               <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
@@ -125,7 +125,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
               </div>
             </div>
 
-            <div className="bg-white rounded-[3rem] p-12 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-2xl md:rounded-[3rem] p-8 md:p-12 border border-gray-100 shadow-sm">
               <h2 className="text-2xl font-bold mb-6">Send a Message</h2>
               <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                 <input type="text" placeholder="Your Name" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -142,7 +142,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
       {page === 'home' && (
         <>
           {/* Store Hero / Banner */}
-          <section className="relative h-[400px] md:h-[500px] rounded-[3rem] overflow-hidden group">
+          <section className="relative h-[400px] md:h-[500px] rounded-2xl md:rounded-[3rem] overflow-hidden group">
             <img
               src={profile.heroImage || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"}
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -200,7 +200,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
 
             {/* Expandable Filter Panel */}
             {showFilters && (
-              <div className="mt-6 p-8 bg-white border border-gray-200 rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-4 duration-300">
+              <div className="mt-6 p-6 md:p-8 bg-white border border-gray-200 rounded-2xl md:rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-4 duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Categories</h4>
@@ -234,7 +234,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col justify-center items-center text-center p-6 border-2 border-dashed border-gray-100 rounded-[2rem]">
+                  <div className="flex flex-col justify-center items-center text-center p-6 border-2 border-dashed border-gray-100 rounded-2xl md:rounded-[2rem]">
                     <Tag className="w-8 h-8 text-gray-300 mb-2" />
                     <p className="text-xs text-gray-400 font-medium italic">Apply filters to refine your search</p>
                   </div>
@@ -248,7 +248,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
             {filteredProducts.length > 0 ? (
               filteredProducts.map(p => (
                 <div key={p.id} className="group flex flex-col">
-                  <div className="relative aspect-[4/5] bg-gray-100 rounded-[2.5rem] overflow-hidden mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-500">
+                  <div className="relative aspect-[4/5] bg-gray-100 rounded-2xl md:rounded-[2.5rem] overflow-hidden mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-500">
                     <img
                       src={p.image}
                       alt={p.name}
@@ -295,7 +295,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
                 </div>
               ))
             ) : (
-              <div className="col-span-full py-32 flex flex-col items-center justify-center bg-white rounded-[3rem] border border-gray-100">
+              <div className="col-span-full py-20 md:py-32 flex flex-col items-center justify-center bg-white rounded-2xl md:rounded-[3rem] border border-gray-100">
                 <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                   <Search className="w-10 h-10 text-gray-200" />
                 </div>
@@ -343,7 +343,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
       )}
 
       {/* Newsletter / Signup */}
-      <section className="bg-gray-900 rounded-[3rem] p-12 md:p-24 text-center text-white relative overflow-hidden">
+      <section className="bg-gray-900 rounded-2xl md:rounded-[3rem] p-12 md:p-24 text-center text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-600/20 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
         <div className="relative z-10">
           <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight">Join the {profile.name} Inner Circle</h2>

@@ -19,6 +19,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceRange, setPriceRange] = useState<number>(100000);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const categories = useMemo(() => {
     const cats = new Set(products.map(p => p.category));
@@ -248,7 +249,10 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
             {filteredProducts.length > 0 ? (
               filteredProducts.map(p => (
                 <div key={p.id} className="group flex flex-col">
-                  <div className="relative aspect-[4/5] bg-gray-100 rounded-2xl md:rounded-[2.5rem] overflow-hidden mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-500">
+                  <div
+                    onClick={() => setSelectedProduct(p)}
+                    className="relative aspect-[4/5] bg-gray-100 rounded-2xl md:rounded-[2.5rem] overflow-hidden mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                  >
                     <img
                       src={p.image}
                       alt={p.name}
@@ -257,13 +261,29 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
 
                     {/* Overlay UI */}
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                      <button
-                        onClick={() => onAddToCart(p)}
-                        style={{ backgroundColor: profile.brandColor }}
-                        className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-xl"
-                      >
-                        <Plus className="w-5 h-5" /> Quick Add
-                      </button>
+                      <div className="flex gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedProduct(p);
+                          }}
+                          className="flex-1 py-4 rounded-2xl bg-white/90 text-gray-900 font-bold"
+                        >
+                          View Details
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToCart(p);
+                          }}
+                          style={{ backgroundColor: profile.brandColor }}
+                          className="flex-1 py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 shadow-xl"
+                        >
+                          <Plus className="w-5 h-5" /> Quick Add
+                        </button>
+                      </div>
                     </div>
 
                     {/* Badges */}
@@ -279,7 +299,7 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
                     </div>
                   </div>
 
-                  <div className="px-2">
+                  <div className="px-2 cursor-pointer" onClick={() => setSelectedProduct(p)}>
 
                     <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
                       {p.name}
@@ -340,6 +360,72 @@ const Storefront: React.FC<StorefrontProps> = ({ profile, products, onAddToCart,
             ))}
           </section>
         </>
+      )}
+
+      {selectedProduct && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative w-full max-w-4xl bg-white rounded-[2rem] overflow-hidden shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setSelectedProduct(null)}
+              className="absolute top-4 right-4 z-10 bg-white/90 p-2 rounded-full text-gray-700 hover:text-gray-900 shadow-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="grid md:grid-cols-2">
+              <div className="bg-gray-100">
+                <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full min-h-[300px] object-cover" />
+              </div>
+
+              <div className="p-8 md:p-10">
+                <div className="mb-4 inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-indigo-600">
+                  {selectedProduct.category}
+                </div>
+
+                <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
+                  {selectedProduct.name}
+                </h3>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-3xl font-black text-gray-900">Rs. {selectedProduct.price.toLocaleString()}</span>
+                  <span className="text-base text-gray-400 line-through">Rs. {(selectedProduct.price * 1.2).toLocaleString()}</span>
+                </div>
+
+                <p className="text-gray-600 text-base leading-relaxed mb-8">
+                  {selectedProduct.description || 'Crafted for everyday use with premium quality materials and stylish design.'}
+                </p>
+
+                <div className="space-y-3 text-sm text-gray-600 mb-8">
+                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500" /> In stock and ready to ship</div>
+                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-orange-500" /> Fast delivery across Pakistan</div>
+                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-indigo-500" /> Secure COD and easy returns</div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onAddToCart(selectedProduct);
+                      setSelectedProduct(null);
+                    }}
+                    style={{ backgroundColor: profile.brandColor }}
+                    className="flex-1 py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 shadow-xl"
+                  >
+                    <Plus className="w-5 h-5" /> Add to Cart
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProduct(null)}
+                    className="flex-1 py-4 rounded-2xl border border-gray-200 bg-gray-50 text-gray-700 font-bold"
+                  >
+                    Continue Shopping
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Newsletter / Signup */}

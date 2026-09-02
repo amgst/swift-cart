@@ -408,31 +408,10 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
         {view === 'landing' && (
           <LandingPage
             stores={stores}
-            onStartOnboarding={() => {
-              if (user) {
-                // Check if user already has a store
-                const userStores = stores.filter(s => s.profile.userId === user.uid);
-                if (userStores.length > 0) {
-                  alert('You already have a store. Each merchant can only create one store.');
-                  navigate('/dashboard');
-                } else {
-                  navigate('/onboarding');
-                }
-              } else {
-                // New merchant - go directly to onboarding (will register during onboarding)
-                navigate('/onboarding');
-              }
-            }}
             onVisitStore={(id) => {
               const store = stores.find(s => s.profile.id === id);
               if (store) {
                 navigate(`/shop/${store.profile.storeSlug}`);
-              }
-            }}
-            onManageStore={(id) => {
-              const store = stores.find(s => s.profile.id === id);
-              if (store) {
-                navigate(`/shop/${store.profile.storeSlug}/admin`);
               }
             }}
           />
@@ -482,23 +461,25 @@ const App: React.FC<AppProps> = ({ initialView, storeSlug, page = 'home' }) => {
               <Storefront profile={activeStore.profile} products={activeStore.products} onAddToCart={addToCart} page={page} />
             )}
             {view === 'admin' && user && activeStore.profile.userId === user.uid && (
-              <AdminPanel
-                profile={activeStore.profile}
-                setProfile={(p) => updateActiveStore(s => ({ ...s, profile: p }))}
-                products={activeStore.products}
-                onAddProduct={(p) => updateActiveStore(s => ({ ...s, products: [p, ...s.products] }))}
-                onDeleteProduct={(id) => updateActiveStore(s => ({ ...s, products: s.products.filter(item => item.id !== id) }))}
-                orders={activeStore.orders}
-                onViewStore={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')}
-                onUpdateOrderStatus={(id, status) => {
-                  storeService.updateOrderStatus(activeStoreId!, id, status);
-                  // Optimistic update
-                  updateActiveStore(s => ({
-                    ...s,
-                    orders: s.orders.map(o => o.id === id ? { ...o, status } : o)
-                  }));
-                }}
-              />
+              <div className="bg-slate-50 rounded-[2rem] border border-slate-200 shadow-sm p-3 md:p-6">
+                <AdminPanel
+                  profile={activeStore.profile}
+                  setProfile={(p) => updateActiveStore(s => ({ ...s, profile: p }))}
+                  products={activeStore.products}
+                  onAddProduct={(p) => updateActiveStore(s => ({ ...s, products: [p, ...s.products] }))}
+                  onDeleteProduct={(id) => updateActiveStore(s => ({ ...s, products: s.products.filter(item => item.id !== id) }))}
+                  orders={activeStore.orders}
+                  onViewStore={() => activeStore ? navigate(`/shop/${activeStore.profile.storeSlug}`) : navigate('/')}
+                  onUpdateOrderStatus={(id, status) => {
+                    storeService.updateOrderStatus(activeStoreId!, id, status);
+                    // Optimistic update
+                    updateActiveStore(s => ({
+                      ...s,
+                      orders: s.orders.map(o => o.id === id ? { ...o, status } : o)
+                    }));
+                  }}
+                />
+              </div>
             )}
             {view === 'checkout' && (
               <Checkout

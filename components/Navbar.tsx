@@ -16,6 +16,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCartClick, onExitStore, user }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const isAdminView = view === 'admin';
 
   return (
     <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm transition-all">
@@ -23,8 +24,10 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
         <div
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => {
-            if (profile) {
+            if (profile && !isAdminView) {
               window.location.href = `/shop/${profile.storeSlug}`;
+            } else if (profile && isAdminView) {
+              window.location.href = `/shop/${profile.storeSlug}/admin`;
             } else {
               setView('landing');
             }
@@ -34,7 +37,7 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
             <ShoppingBag className="text-white w-5 h-5" />
           </div>
           <span className="text-xl font-bold tracking-tight text-gray-900 truncate max-w-[150px] sm:max-w-xs block">
-            {profile ? profile.name : 'SwiftCart'}
+            {profile ? (isAdminView ? `${profile.name} Admin` : profile.name) : 'SwiftCart'}
           </span>
         </div>
 
@@ -84,6 +87,27 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
                 Track Order
               </Link>
             </div>
+          ) : isAdminView ? (
+            <div className="hidden md:flex items-center gap-6">
+              <button
+                onClick={() => setView('admin')}
+                className={`font-bold text-sm transition-colors ${location.pathname.includes('/admin') ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                Dashboard
+              </button>
+              <Link
+                to={`/shop/${profile.storeSlug}`}
+                className="font-bold text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Storefront
+              </Link>
+              <button
+                onClick={onExitStore}
+                className="font-bold text-sm text-gray-500 hover:text-red-600 transition-colors"
+              >
+                Exit
+              </button>
+            </div>
           ) : (
             <div className="hidden md:flex items-center gap-6">
               <Link
@@ -113,8 +137,8 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
           <div className="flex items-center gap-4">
             <button
               onClick={onCartClick}
-              disabled={!profile || view === 'admin'}
-              className={`relative p-2 transition-colors ${profile && view !== 'admin' ? 'text-gray-600 hover:text-indigo-600' : 'text-gray-300 pointer-events-none'}`}
+              disabled={!profile || isAdminView}
+              className={`relative p-2 transition-colors ${profile && !isAdminView ? 'text-gray-600 hover:text-indigo-600' : 'text-gray-300 pointer-events-none'}`}
             >
               <ShoppingCart className="w-6 h-6" />
               {cartCount > 0 && (
@@ -148,6 +172,12 @@ const Navbar: React.FC<NavbarProps> = ({ profile, view, setView, cartCount, onCa
               ) : (
                 <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 bg-gray-100 text-gray-900 rounded-xl font-bold text-center">Dashboard</Link>
               )}
+            </div>
+          ) : isAdminView ? (
+            <div className="flex flex-col gap-4">
+              <button onClick={() => { setView('admin'); setIsMenuOpen(false); }} className="font-bold text-left text-gray-600 py-2">Dashboard</button>
+              <Link to={`/shop/${profile.storeSlug}`} onClick={() => setIsMenuOpen(false)} className="font-bold text-gray-600 py-2">Storefront</Link>
+              <button onClick={() => { onExitStore(); setIsMenuOpen(false); }} className="font-bold text-left text-red-600 py-2">Exit</button>
             </div>
           ) : (
             <div className="flex flex-col gap-4">

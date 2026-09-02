@@ -3,8 +3,6 @@ import { MerchantStore } from '../types';
 import { Store, Plus, ExternalLink, Settings, LogOut } from 'lucide-react';
 import { logoutUser } from '../firebase/auth';
 import { User } from 'firebase/auth';
-import SuperAdminDashboard from './SuperAdminDashboard';
-import { isSuperAdmin } from '../lib/superAdmin';
 
 interface UserDashboardProps {
   user: User;
@@ -27,18 +25,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
     await logoutUser();
     onLogout();
   };
-
-  // Check if current user is a super admin
-  if (isSuperAdmin(user.email)) {
-    return (
-      <SuperAdminDashboard
-        user={user}
-        stores={stores}
-        onVisitStore={onVisitStore}
-        onLogout={onLogout}
-      />
-    );
-  }
 
   const userStores = stores.filter(store => store.profile?.userId === user.uid);
   const hasStore = userStores.length > 0;

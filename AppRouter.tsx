@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import App from './App';
 import { useParams } from 'react-router-dom';
 import SuperAdminLogin from './components/SuperAdminLogin';
+import SuperAdminPage from './components/SuperAdminPage';
 
 // Wrapper component to handle store slug routing
 const StoreRoute: React.FC<{ page?: 'home' | 'about' | 'contact' }> = ({ page = 'home' }) => {
@@ -40,6 +41,7 @@ const AppRouter: React.FC = () => {
         <Route path="/login" element={<AppWithView view="login" />} />
         <Route path="/register" element={<AppWithView view="register" />} />
         <Route path="/superadmin" element={<SuperAdminLogin />} />
+        <Route path="/superadmin/dashboard" element={<SuperAdminPage />} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<AppWithView view="dashboard" />} />

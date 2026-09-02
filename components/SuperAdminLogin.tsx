@@ -23,7 +23,7 @@ const SuperAdminLogin: React.FC = () => {
         setError('This account is not authorized for platform admin access.');
         return;
       }
-      navigate('/dashboard');
+      navigate('/superadmin/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to sign in. Please check your credentials.');
     } finally {
